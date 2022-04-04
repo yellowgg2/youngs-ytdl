@@ -11,7 +11,7 @@ services:
       - PUID=1032
       - PGID=100
     volumes:
-      - ./music:/ytdlbot/download
+      - /volume1/Music/bot-download:/ytdlbot/download
       - ./db:/ytdlbot/db
   ytdl-service:
     container_name: ytdl-service
