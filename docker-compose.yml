@@ -8,6 +8,8 @@ services:
     restart: always
     environment:
       - BOT_API_TOKEN=5203189153:AAFdYh-OguVKzZlqcWPGMC8viC4yIye3gRc
+      - PUID=1032
+      - PGID=100
     volumes:
       - ./music:/ytdlbot/download
       - ./db:/ytdlbot/db
