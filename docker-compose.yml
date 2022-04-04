@@ -10,7 +10,7 @@ services:
       - BOT_API_TOKEN=5203189153:AAFdYh-OguVKzZlqcWPGMC8viC4yIye3gRc
     volumes:
       - ./music:/ytdlbot/download
-      - ./ytdl-bot.db:/ytdlbot/ytdl-bot.db
+      - ./db:/ytdlbot/db
   ytdl-service:
     container_name: ytdl-service
     image: mwader/ydls
