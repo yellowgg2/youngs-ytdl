@@ -214,6 +214,9 @@ export default class BotService {
             .getContent(msg.text!)
             .then(result => {
               this.sendMsg(chatId, `🎉 다운로드 완료\n${result}`);
+            })
+            .catch(e => {
+              this.sendMsg(chatId, `👿 ${e}`);
             });
         } else {
           this.sendMsg(chatId, "👿 이건 URL이 아니잖아!");
