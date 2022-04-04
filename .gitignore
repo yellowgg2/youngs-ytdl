@@ -2,6 +2,7 @@
 # Edit at https://www.gitignore.io/?templates=node,visualstudiocode
 download/
 logs/
+db/
 *.mp3
 *.db
 ### Node ###

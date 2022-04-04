@@ -4,7 +4,7 @@ import { glog } from "../logger/custom-logger";
 export default class DbService {
   private static instance: DbService;
   private dbInstance?: sqlite3.Database;
-  private _dbFilename = "ytdl-bot.db";
+  private _dbFilename = "./db/ytdl-bot.db";
 
   private constructor() {
     this.open();
