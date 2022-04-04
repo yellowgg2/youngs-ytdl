@@ -207,11 +207,14 @@ export default class BotService {
       }
       return;
     } else {
-      console.log(msg.text);
       this.authUserCommand(chatId, username, () => {
         let valid = /^(ftp|http|https):\/\/[^ "]+$/.test(msg.text!);
         if (valid === true) {
-          ApiCaller.getInstance().getContent(msg.text!);
+          ApiCaller.getInstance()
+            .getContent(msg.text!)
+            .then(result => {
+              this.sendMsg(chatId, `🎉 다운로드 완료\n${result}`);
+            });
         } else {
           this.sendMsg(chatId, "👿 이건 URL이 아니잖아!");
         }
