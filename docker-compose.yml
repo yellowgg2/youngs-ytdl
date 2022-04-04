@@ -1,0 +1,15 @@
+version: "3.1"
+services:
+  ytdl-download-bot:
+    container_name: ytdl-download-bot
+    image: ytdlbot
+    build:
+      context: .
+    restart: always
+    ports:
+      - 58712:80
+    environment:
+      - BOT_API_TOKEN=5203189153:AAFdYh-OguVKzZlqcWPGMC8viC4yIye3gRc
+    volumes:
+      - ./music:/ytdlbot/download
+      - ./ytdl-bot.db:/ytdlbot/ytdl-bot.db

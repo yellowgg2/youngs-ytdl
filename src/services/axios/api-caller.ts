@@ -1,5 +1,4 @@
 import axios, { AxiosInstance } from "axios";
-import { Blob } from "buffer";
 import fs from "fs";
 import dotenv from "dotenv";
 dotenv.config();
@@ -27,7 +26,7 @@ export default class ApiCaller {
   }
 
   getContent(url: string, type: string = "mp3") {
-    this._axiosCaller
+    return this._axiosCaller
       .get("/", { responseType: "stream", params: { format: type, url } })
       .then(async res => {
         let filename = "";
@@ -37,15 +36,10 @@ export default class ApiCaller {
         if (matches != null && matches[1]) {
           filename = matches[1].replace(/['"]/g, "");
         }
-        // const blob = new Blob([res.data], {
-        //   type: "audio/mpeg"
-        // });
-        // const buffer = Buffer.from(await blob.arrayBuffer());
-        // fs.writeFile("aaa.mp3", buffer, () => console.log("video saved!"));
 
-        var file = fs.createWriteStream(filename);
+        let file = fs.createWriteStream(`./download/${filename}`);
         res.data.pipe(file);
-        console.log(`${filename} downloaded`);
+        return `${filename}`;
       });
   }
 }
