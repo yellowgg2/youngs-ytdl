@@ -9,11 +9,14 @@ RUN echo $TZ > /etc/timezone && \
     apt-get clean
 
 RUN mkdir -p /ytdlbot/download
+RUN mkdir -p /ytdlbot/db
 
 WORKDIR /ytdlbot
 
 COPY . .
 
 RUN npm i
+
+RUN chmod +x /ytdlbot/entry-point.sh
 
 CMD ["/ytdlbot/entry-point.sh"]
