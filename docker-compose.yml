@@ -9,6 +9,7 @@ services:
     environment:
       - BOT_API_TOKEN=5203189153:AAFdYh-OguVKzZlqcWPGMC8viC4yIye3gRc
       - ADMIN_USERNAME=yellowgg
+      - ADMIN_DESC=관리자
       - ADMIN_CHATID=22442558
       - PUID=1032
       - PGID=100

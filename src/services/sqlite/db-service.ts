@@ -30,8 +30,23 @@ export default class DbService {
     await this.writeQuery(userTable);
   }
 
+  private async createUserFileTypeTable() {
+    let fileTypeTable = `
+    CREATE TABLE IF NOT EXISTS ytdl_filetype (
+      username TEXT,
+      filetype TEXT,
+      PRIMARY KEY (username, filetype)
+      )
+  `;
+
+    await this.writeQuery(fileTypeTable);
+  }
+
   async createTable() {
-    await Promise.all([this.createUserTable()]);
+    return Promise.all([
+      this.createUserTable(),
+      this.createUserFileTypeTable()
+    ]);
   }
 
   private open() {

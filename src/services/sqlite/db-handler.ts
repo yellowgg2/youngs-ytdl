@@ -69,7 +69,10 @@ export default class DbHandler {
 
   static async initAuthorizedUsers(): Promise<void> {
     // await DbHandler.deleteAllUser();
-    await DbHandler.insertNewUser("pinkyewon", "아내", "user");
-    await DbHandler.insertNewUser("yellowgg", "강영기", "admin");
+    await DbHandler.insertNewUser(
+      process.env.ADMIN_USERNAME ?? "admin",
+      process.env.ADMIN_DESC ?? "관리자",
+      "admin"
+    );
   }
 }
