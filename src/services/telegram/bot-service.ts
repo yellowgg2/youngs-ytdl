@@ -1,10 +1,14 @@
-import TelegramBot from "node-telegram-bot-api";
+import TelegramBot, { SendMessageOptions } from "node-telegram-bot-api";
+import {
+  InlineKeyboard,
+  InlineKeyboardButton,
+  Row
+} from "node-telegram-keyboard-wrapper";
 import {
   ADMIN_CHATID,
   botInstance,
   NON_AUTH_WARN_MSG
 } from "../../global-bot-config";
-import ApiCaller from "../axios/api-caller";
 import { glog } from "../logger/custom-logger";
 import DbHandler from "../sqlite/db-handler";
 
@@ -24,6 +28,12 @@ export default class BotService {
   start() {
     botInstance.on("message", this._messageHandler);
     botInstance.on("polling_error", err => console.log(err));
+    botInstance.on("callback_query", function (msg) {
+      console.log(msg); // msg.data refers to the callback_data
+      botInstance
+        .answerCallbackQuery(msg.id)
+        .then(() => console.log("=================="));
+    });
   }
 
   showHelp(chatId: number) {
@@ -39,10 +49,12 @@ export default class BotService {
     this.sendMsg(chatId, helpMsg);
   }
 
-  sendMsg(chatId: number, msg: string): void {
-    botInstance
-      .sendMessage(chatId, msg, { parse_mode: "HTML" })
-      .catch(e => glog.error(e));
+  sendMsg(
+    chatId: number,
+    msg: string,
+    options: SendMessageOptions = { parse_mode: "HTML" }
+  ): void {
+    botInstance.sendMessage(chatId, msg, options).catch(e => glog.error(e));
   }
 
   sendMsgToAdmin(msg: string): void {
@@ -210,14 +222,40 @@ export default class BotService {
       this.authUserCommand(chatId, username, () => {
         let valid = /^(ftp|http|https):\/\/[^ "]+$/.test(msg.text!);
         if (valid === true) {
-          ApiCaller.getInstance()
-            .getContent(msg.text!)
-            .then(result => {
-              this.sendMsg(chatId, `🎉 다운로드 완료\n${result}`);
-            })
-            .catch(e => {
-              this.sendMsg(chatId, `👿 ${e}`);
-            });
+          let ytdlUrl = msg.text!;
+          let ik = new InlineKeyboard();
+          let firstRow = new Row<InlineKeyboardButton>();
+          let secondRow = new Row<InlineKeyboardButton>();
+
+          let _firstRowFormatButtons = [
+            new InlineKeyboardButton("mp3", "callback_data", "mp3"),
+            new InlineKeyboardButton("mp4", "callback_data", "ogg"),
+            new InlineKeyboardButton("m4a", "callback_data", "m4a")
+          ];
+
+          let _secondRowFormatButtons = [
+            new InlineKeyboardButton("flac", "callback_data", "flac"),
+            new InlineKeyboardButton("ogg", "callback_data", "ogg"),
+            new InlineKeyboardButton("wav", "callback_data", "wav"),
+            new InlineKeyboardButton("webm", "callback_data", "webm")
+          ];
+
+          firstRow.push(..._firstRowFormatButtons);
+          secondRow.push(..._secondRowFormatButtons);
+
+          ik.push(firstRow);
+          ik.push(secondRow);
+          this.sendMsg(chatId, `👿 오호호`, {
+            reply_markup: ik.getMarkup()
+          });
+          //   ApiCaller.getInstance()
+          //     .getContent(ytdlUrl)
+          //     .then(result => {
+          //       this.sendMsg(chatId, `🎉 다운로드 완료\n${result}`);
+          //     })
+          //     .catch(e => {
+          //       this.sendMsg(chatId, `👿 ${e}`);
+          //     });
         } else {
           this.sendMsg(chatId, "👿 이건 URL이 아니잖아!");
         }

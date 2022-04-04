@@ -13,9 +13,13 @@ interface ICallerOption {
 export default class ApiCaller {
   private _axiosCaller: AxiosInstance;
   private static instance: ApiCaller;
+  private _baseUrl =
+    process.env.NODE_ENV === "production"
+      ? process.env.YTDL_URL
+      : "http://192.168.4.73:8080";
 
   private constructor() {
-    this._axiosCaller = axios.create({ baseURL: process.env.YTDL_URL });
+    this._axiosCaller = axios.create({ baseURL: this._baseUrl });
   }
 
   static getInstance() {
