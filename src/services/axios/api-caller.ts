@@ -1,6 +1,7 @@
 import axios, { AxiosInstance } from "axios";
 import fs from "fs";
 import dotenv from "dotenv";
+import { glog } from "../logger/custom-logger";
 dotenv.config();
 
 interface ICallerOption {
@@ -29,6 +30,10 @@ export default class ApiCaller {
     return this._axiosCaller
       .get("/", { responseType: "stream", params: { format: type, url } })
       .then(async res => {
+        if (res.status !== 200) {
+          glog.error(`[Line - 34][File - api-caller.ts] Unknown URL`);
+          throw "Unknown url";
+        }
         let filename = "";
 
         let filenameRegex = /filename=((['"]).*?\2|[^;\n]*)/;
@@ -37,8 +42,12 @@ export default class ApiCaller {
           filename = matches[1].replace(/['"]/g, "");
         }
 
-        let file = fs.createWriteStream(`./download/${filename}`);
-        res.data.pipe(file);
+        try {
+          let file = fs.createWriteStream(`./download/${filename}`);
+          res.data.pipe(file);
+        } catch (error) {
+          glog.error(`[Line - 44][File - api-caller.ts] %o`, error);
+        }
         return `${filename}`;
       });
   }
