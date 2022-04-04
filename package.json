@@ -1,0 +1,36 @@
+{
+  "name": "ytdl-download-bot",
+  "version": "1.0.0",
+  "description": "",
+  "main": "app.ts",
+  "author": "Youngki Kang",
+  "license": "MIT",
+  "scripts": {
+    "init": "tsc --init",
+    "test": "jest",
+    "cleantest": "npm run test:clean",
+    "test:clean": "jest --clearCache",
+    "debug": "tsc --sourcemap",
+    "build": "tsc",
+    "start": "cross-env NODE_ENV=production ts-node src/app.ts",
+    "dev": "cross-env NODE_ENV=development ts-node-dev --respawn src/app.ts"
+  },
+  "devDependencies": {
+    "@types/node-telegram-bot-api": "^0.56.1",
+    "@types/sqlite3": "^3.1.8",
+    "@types/winston": "^2.4.4",
+    "cross-env": "^7.0.3",
+    "ts-node": "^10.7.0",
+    "ts-node-dev": "^1.1.8",
+    "typescript": "^4.6.3"
+  },
+  "dependencies": {
+    "axios": "^0.26.1",
+    "dotenv": "^16.0.0",
+    "node-telegram-bot-api": "^0.56.0",
+    "node-telegram-keyboard-wrapper": "^3.0.0",
+    "sqlite3": "^5.0.2",
+    "winston": "^3.6.0",
+    "winston-daily-rotate-file": "^4.6.1"
+  }
+}
