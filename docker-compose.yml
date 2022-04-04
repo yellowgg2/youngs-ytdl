@@ -6,10 +6,12 @@ services:
     build:
       context: .
     restart: always
-    ports:
-      - 58712:80
     environment:
       - BOT_API_TOKEN=5203189153:AAFdYh-OguVKzZlqcWPGMC8viC4yIye3gRc
     volumes:
       - ./music:/ytdlbot/download
       - ./ytdl-bot.db:/ytdlbot/ytdl-bot.db
+  ytdl-service:
+    container_name: ytdl-service
+    image: mwader/ydls
+    restart: always
