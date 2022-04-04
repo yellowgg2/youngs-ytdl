@@ -6,6 +6,11 @@ interface IYtdlUsers {
   type: string;
 }
 
+interface IYtdlFileType {
+  username: string;
+  filetype: string;
+}
+
 export default class DbHandler {
   static async insertNewUser(
     username: string,
@@ -50,6 +55,53 @@ export default class DbHandler {
     );
 
     return result.length !== 0;
+  }
+
+  static async isExistingFileTypeForUser(
+    username: string,
+    type: string
+  ): Promise<boolean> {
+    let result: Array<any> = await DbService.getInstance().selectQuery(
+      `SELECT * FROM ytdl_filetype WHERE username = '${username}' and filetype = '${type}'`
+    );
+
+    return result.length !== 0;
+  }
+
+  static async getAllFileTypeForUser(
+    username: string
+  ): Promise<Array<IYtdlFileType>> {
+    let result: Array<IYtdlFileType> =
+      await DbService.getInstance().selectQuery(
+        `SELECT * FROM ytdl_filetype WHERE username = '${username}'`
+      );
+
+    return result;
+  }
+
+  static async addOrDeleteFileType(
+    username: string,
+    type: string
+  ): Promise<string> {
+    if (!(await DbHandler.isExistingFileTypeForUser(username, type))) {
+      await DbService.getInstance().writeQuery(
+        "INSERT INTO ytdl_filetype(username, filetype) VALUES (?, ?)",
+        [username, type]
+      );
+      return `성공적으로 [[ 추가 ]] 했습니다. [${type}]`;
+    } else {
+      await DbService.getInstance().writeQuery(
+        `DELETE FROM ytdl_filetype where username = '${username}' AND filetype = '${type}'`
+      );
+      return `성공적으로 [[ 삭제 ]] 했습니다. [${type}]`;
+    }
+  }
+
+  static async deleteAllFileType(username: string): Promise<string> {
+    await DbService.getInstance().writeQuery(
+      `DELETE FROM ytdl_filetype where username = '${username}'`
+    );
+    return `성공적으로 [[ 모든 ]] 타입을 삭제했습니다.`;
   }
 
   static async isAdminUser(username: string): Promise<boolean> {
