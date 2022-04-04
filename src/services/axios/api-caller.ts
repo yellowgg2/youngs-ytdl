@@ -32,7 +32,7 @@ export default class ApiCaller {
       .then(async res => {
         if (res.status !== 200) {
           glog.error(`[Line - 34][File - api-caller.ts] Unknown URL`);
-          throw "Unknown url";
+          throw res.statusText;
         }
         let filename = "";
 
@@ -47,6 +47,7 @@ export default class ApiCaller {
           res.data.pipe(file);
         } catch (error) {
           glog.error(`[Line - 44][File - api-caller.ts] %o`, error);
+          throw error;
         }
         return `${filename}`;
       });
