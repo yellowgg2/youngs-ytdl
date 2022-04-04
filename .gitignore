@@ -3,7 +3,6 @@
 lastwatch
 download/
 logs/
-db/
 *.mp3
 *.db
 ### Node ###
