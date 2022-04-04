@@ -9,6 +9,7 @@ import {
   botInstance,
   NON_AUTH_WARN_MSG
 } from "../../global-bot-config";
+import ApiCaller from "../axios/api-caller";
 import { glog } from "../logger/custom-logger";
 import DbHandler from "../sqlite/db-handler";
 
@@ -28,11 +29,22 @@ export default class BotService {
   start() {
     botInstance.on("message", this._messageHandler);
     botInstance.on("polling_error", err => console.log(err));
-    botInstance.on("callback_query", function (msg) {
+    botInstance.on("callback_query", msg => {
       console.log(msg); // msg.data refers to the callback_data
-      botInstance
-        .answerCallbackQuery(msg.id)
-        .then(() => console.log("=================="));
+      let chatId = msg.message?.chat.id;
+      let ytdlUrl = msg.message?.text;
+      let fileType = msg.data;
+      ApiCaller.getInstance()
+        .getContent(ytdlUrl!, fileType)
+        .then(result => {
+          this.sendMsg(chatId!, `🎉 다운로드 완료\n${result}`);
+        })
+        .catch(e => {
+          this.sendMsg(chatId!, `👿 ${e}`);
+        });
+      //   botInstance
+      //     .answerCallbackQuery(msg.id)
+      //     .then(() => console.log("=================="));
     });
   }
 
@@ -125,7 +137,7 @@ export default class BotService {
 
   showAllUsers(chatId: number) {
     DbHandler.getAllUsers().then(users => {
-      let allUsers = "⚠ 특수 명령이 허용된 사용자 목록\n\n";
+      let allUsers = "⚠ 허용된 사용자 목록\n\n";
       for (let user of users) {
         allUsers += `🎫 ${user.username}\n`;
         allUsers += `🤶 ${user.first_name}\n`;
@@ -229,7 +241,7 @@ export default class BotService {
 
           let _firstRowFormatButtons = [
             new InlineKeyboardButton("mp3", "callback_data", "mp3"),
-            new InlineKeyboardButton("mp4", "callback_data", "ogg"),
+            new InlineKeyboardButton("mp4", "callback_data", "mp4"),
             new InlineKeyboardButton("m4a", "callback_data", "m4a")
           ];
 
@@ -245,17 +257,9 @@ export default class BotService {
 
           ik.push(firstRow);
           ik.push(secondRow);
-          this.sendMsg(chatId, `👿 오호호`, {
+          this.sendMsg(chatId, ytdlUrl, {
             reply_markup: ik.getMarkup()
           });
-          //   ApiCaller.getInstance()
-          //     .getContent(ytdlUrl)
-          //     .then(result => {
-          //       this.sendMsg(chatId, `🎉 다운로드 완료\n${result}`);
-          //     })
-          //     .catch(e => {
-          //       this.sendMsg(chatId, `👿 ${e}`);
-          //     });
         } else {
           this.sendMsg(chatId, "👿 이건 URL이 아니잖아!");
         }
