@@ -8,6 +8,8 @@ services:
     restart: always
     environment:
       - BOT_API_TOKEN=5203189153:AAFdYh-OguVKzZlqcWPGMC8viC4yIye3gRc
+      - ADMIN_USERNAME=yellowgg
+      - ADMIN_CHATID=22442558
       - PUID=1032
       - PGID=100
     volumes:
