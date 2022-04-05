@@ -18,8 +18,8 @@ services:
       - PUID=1032
       - PGID=100
     volumes:
-      - ./download:/ytdlbot/download
-      - ./db:/ytdlbot/db
+      - ./bot/download:/ytdlbot/download
+      - ./bot/db:/ytdlbot/db
   ytdl-service:
     container_name: ytdl-service
     image: ytdl-service
