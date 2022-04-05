@@ -22,7 +22,3 @@ URL을 붙여 넣으면 원하는 파일 타입으로 다운로드 해준다
 1. 다운로드 경로인 `/ytdlbot/download` 폴더를 원하는 host 경로에 마운트 시킨다
 1. 시놀로지의 경우 Music folder에 마운트를 하면 indexing을 위해 `download-watch.sh`를 부팅 스케줄러로 걸어준다
    1. 이 작업을 하지 않으면 파일이 다운로드 되어도 안보일 수 있음
-
-# TODO
-
-1. 각 사용자마다 기본 fileType을 지정할 수 있는 명령어를 추가한다
