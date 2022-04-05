@@ -50,18 +50,27 @@ export default class ApiCaller {
         }
 
         let buildFileName = "";
+        let channel = decodeURI(res.headers["cc-channel"]);
+        let uploadDate = res.headers["cc-uploaddate"];
+
+        let downloadChannelDir = `./download/${channel}`;
 
         if (BotService.addChannelToFileName) {
-          buildFileName += `${decodeURI(res.headers["cc-channel"])}_`;
+          buildFileName += `${channel}_`;
         }
 
         if (BotService.addUploadDateToFileName) {
-          buildFileName += `${res.headers["cc-uploaddate"]}_`;
+          buildFileName += `${uploadDate}_`;
         }
 
         buildFileName += filename;
         try {
-          let file = fs.createWriteStream(`./download/${buildFileName}`);
+          if (!fs.existsSync(downloadChannelDir)) {
+            fs.mkdirSync(downloadChannelDir);
+          }
+          let file = fs.createWriteStream(
+            `${downloadChannelDir}/${buildFileName}`
+          );
           res.data.pipe(file);
         } catch (error) {
           glog.error(`[Line - 44][File - api-caller.ts] %o`, error);
