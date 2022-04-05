@@ -19,6 +19,10 @@ URL을 붙여 넣으면 원하는 파일 타입으로 다운로드 해준다
 
 # 설치
 
+> docker, docker-compose는 기본적으로 설치하셔야 합니다.
+
+위의 환경변수 값들을 셋팅 후 아래 명령 실행
+
 ```sh
 docker-compose up -d --build
 ```
