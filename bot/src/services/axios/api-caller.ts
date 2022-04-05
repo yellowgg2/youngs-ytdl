@@ -2,6 +2,7 @@ import axios, { AxiosInstance } from "axios";
 import fs from "fs";
 import dotenv from "dotenv";
 import { glog } from "../logger/custom-logger";
+import BotService from "../telegram/bot-service";
 dotenv.config();
 
 interface ICallerOption {
@@ -48,14 +49,25 @@ export default class ApiCaller {
           filename = decodeURI(filename);
         }
 
+        let buildFileName = "";
+
+        if (BotService.addChannelToFileName) {
+          buildFileName += `${decodeURI(res.headers["cc-channel"])}_`;
+        }
+
+        if (BotService.addUploadDateToFileName) {
+          buildFileName += `${res.headers["cc-uploaddate"]}_`;
+        }
+
+        buildFileName += filename;
         try {
-          let file = fs.createWriteStream(`./download/${filename}`);
+          let file = fs.createWriteStream(`./download/${buildFileName}`);
           res.data.pipe(file);
         } catch (error) {
           glog.error(`[Line - 44][File - api-caller.ts] %o`, error);
           throw error;
         }
-        return `${filename}`;
+        return `${buildFileName}`;
       });
   }
 }

@@ -4,7 +4,7 @@ services:
     container_name: ytdl-download-bot
     image: ytdlbot
     build:
-      context: .
+      context: ./bot
       args:
         PUID: 1032
         PGID: 100
@@ -18,9 +18,11 @@ services:
       - PUID=1032
       - PGID=100
     volumes:
-      - ./download:/ytdlbot/download
-      - ./db:/ytdlbot/db
+      - ./bot/download:/ytdlbot/download
+      - ./bot/db:/ytdlbot/db
   ytdl-service:
     container_name: ytdl-service
-    image: mwader/ydls
+    image: ytdl-service
+    build:
+      context: ./ydls
     restart: always
