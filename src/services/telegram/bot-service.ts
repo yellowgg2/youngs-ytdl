@@ -128,7 +128,7 @@ export default class BotService {
     this.sendMsgToAdmin("Hidden Cmd: 새로운 사용자 추가");
     this.sendMsgToAdmin(`ID: ${id} NAME: ${name}`);
     DbHandler.insertNewUser(id, name, type)
-      .then(() => this.sendMsg(chatId, "🌈 성공적으로 추가되었습니다"))
+      .then(() => this.sendMsg(chatId, "🌈 성공적으로 추가 되었습니다"))
       .catch(e => glog.error(e));
   }
 
@@ -145,7 +145,7 @@ export default class BotService {
     this.sendMsgToAdmin("Hidden Cmd: 새로운 사용자 갱신");
     this.sendMsgToAdmin(`ID: ${id} NAME: ${name}`);
     DbHandler.updateUser(id, name, type)
-      .then(() => this.sendMsg(chatId, "🌈 성공적으로 갱신되었습니다"))
+      .then(() => this.sendMsg(chatId, "🌈 성공적으로 갱신 되었습니다"))
       .catch(e => glog.error(e));
   }
 
@@ -157,7 +157,7 @@ export default class BotService {
     this.sendMsgToAdmin("Hidden Cmd: 사용자 삭제");
     this.sendMsgToAdmin(`ID: ${id}`);
     DbHandler.deleteUser(id)
-      .then(() => this.sendMsg(chatId, "🌈 성공적으로 삭제되었습니다"))
+      .then(() => this.sendMsg(chatId, "🌈 성공적으로 삭제 되었습니다"))
       .catch(e => glog.error(e));
   }
 
