@@ -40,10 +40,12 @@ export default class ApiCaller {
         }
         let filename = "";
 
-        let filenameRegex = /filename=((['"]).*?\2|[^;\n]*)/;
+        let filenameRegex =
+          /filename\*?=['"]?(?:UTF-\d['"]*)?([^;\r\n"']*)['"]?;?/;
         let matches = filenameRegex.exec(res.headers["content-disposition"]);
         if (matches != null && matches[1]) {
           filename = matches[1].replace(/['"]/g, "");
+          filename = decodeURI(filename);
         }
 
         try {
