@@ -17,6 +17,9 @@ export default class BotService {
   private static instance: BotService;
   private _fileTypeMsg = "🎫 파일 타입을 선택해주세요";
 
+  static addChannelToFileName = false;
+  static addUploadDateToFileName = false;
+
   private constructor() {}
 
   static getInstance() {
@@ -84,6 +87,11 @@ export default class BotService {
     let helpMsg = "/adduser - 사용자 추가 명령\n";
     helpMsg += "/upuser - 사용자 갱신\n";
     helpMsg += "/deluser - 사용자 제거\n";
+    helpMsg += "/chtof - 채널 이름을 저장 파일이름에 추가\n";
+    helpMsg += "/udtof - 업로드 날짜를 저장 파일 이름에 추가\n";
+
+    helpMsg +=
+      "\n-----------------\nudtof, chtof 명령은 서버를 재설치하면 리셋됩니다.\n그리고 모든 사용자에게 적용됩니다.";
     this.sendMsg(chatId, helpMsg);
   }
 
@@ -300,6 +308,29 @@ export default class BotService {
         case /\/deluser/.test(cmd[0]):
           this.adminCommand(chatId, username, () => {
             this.delUser(chatId, cmd[1]);
+          });
+          break;
+        case /\/chtof/.test(cmd[0]):
+          this.adminCommand(chatId, username, () => {
+            BotService.addChannelToFileName = !BotService.addChannelToFileName;
+            this.sendMsg(
+              chatId!,
+              BotService.addChannelToFileName
+                ? `😀 파일 이름에 채널이름이 들어갑니다.`
+                : `😱 파일 이름에 채널이름이 빠집니다.`
+            );
+          });
+          break;
+        case /\/udtof/.test(cmd[0]):
+          this.adminCommand(chatId, username, () => {
+            BotService.addUploadDateToFileName =
+              !BotService.addUploadDateToFileName;
+            this.sendMsg(
+              chatId!,
+              BotService.addUploadDateToFileName
+                ? `😀 파일 이름에 업로드 날짜가 들어갑니다.`
+                : `😱 파일 이름에 업로드 날짜가 빠집니다.`
+            );
           });
           break;
         case /\/setft/.test(cmd[0]):
