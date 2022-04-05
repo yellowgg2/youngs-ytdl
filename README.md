@@ -17,6 +17,12 @@ URL을 붙여 넣으면 원하는 파일 타입으로 다운로드 해준다
 | `ADMIN_DESC`     | 관리자 설명                                                  |          |
 | `ADMIN_CHATID`   | 특정 명령이나 에러 발생 시 메세지를 보낼 chat id             | 11223344 |
 
+# 설치
+
+```sh
+docker-compose up -d --build
+```
+
 # 주의사항
 
 1. 다운로드 경로인 `/ytdlbot/download` 폴더를 원하는 host 경로에 마운트 시킨다
