@@ -19,7 +19,9 @@ docker-compose.yml의 env, args값 설명
 | `ADMIN_DESC`     | 관리자 설명                                                  |          |
 | `ADMIN_CHATID`   | 특정 명령이나 에러 발생 시 메세지를 보낼 chat id             | 11223344 |
 
-# 새로 설치
+# 설치
+
+`git clone --recurse-submodules https://github.com/yellowgg2/youngs-ytdl` 명령으로 submodule까지 clone 하시고 
 
 > docker, docker-compose는 기본적으로 설치하셔야 합니다.
 
