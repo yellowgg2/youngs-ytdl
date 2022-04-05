@@ -7,14 +7,14 @@ services:
       context: .
     restart: always
     environment:
-      - BOT_API_TOKEN=5203189153:AAFdYh-OguVKzZlqcWPGMC8viC4yIye3gRc
-      - ADMIN_USERNAME=yellowgg
-      - ADMIN_DESC=관리자
-      - ADMIN_CHATID=22442558
+      - BOT_API_TOKEN=Your bot token here
+      - ADMIN_USERNAME=admin
+      - ADMIN_DESC=admin
+      - ADMIN_CHATID=admin chat id number
       - PUID=1032
       - PGID=100
     volumes:
-      - /volume1/Music/bot-download:/ytdlbot/download
+      - ./download:/ytdlbot/download
       - ./db:/ytdlbot/db
   ytdl-service:
     container_name: ytdl-service
