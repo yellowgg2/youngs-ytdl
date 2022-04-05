@@ -1,0 +1,3 @@
+[submodule "ydls"]
+	path = ydls
+	url = https://github.com/yellowgg2/ydls.git
