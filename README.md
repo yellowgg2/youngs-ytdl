@@ -8,7 +8,7 @@ URL을 붙여 넣으면 원하는 파일 타입으로 다운로드 해준다
 
 # environments
 
-docker-compose.yml의 env값 설명
+docker-compose.yml의 env, args값 설명
 
 | key              | 설명                                                         | 예시     |
 | ---------------- | ------------------------------------------------------------ | -------- |
@@ -23,7 +23,7 @@ docker-compose.yml의 env값 설명
 
 > docker, docker-compose는 기본적으로 설치하셔야 합니다.
 
-위의 환경변수 값들을 셋팅 후 아래 명령 실행
+위의 환경변수 값들을 셋팅 후 아래 명령 실행 (environment와 args에 있는 PUID, PGID를 일치 시켜야함)
 
 ```sh
 docker-compose up -d --build
