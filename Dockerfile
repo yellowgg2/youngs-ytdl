@@ -11,6 +11,12 @@ RUN echo $TZ > /etc/timezone && \
 RUN mkdir -p /ytdlbot/download
 RUN mkdir -p /ytdlbot/db
 
+ARG UNAME
+ARG PUID
+ARG PGID
+RUN groupadd -g $PGID -o $UNAME
+RUN useradd -m -u $PUID -g $PGID -o -s /bin/sh $UNAME
+
 WORKDIR /ytdlbot
 
 COPY . .
@@ -18,5 +24,8 @@ COPY . .
 RUN npm i
 
 RUN chmod +x /ytdlbot/entry-point.sh
+RUN chown -R $UNAME:$UNAME /ytdlbot
+RUN ls -la
+USER $UNAME
 
 CMD ["/ytdlbot/entry-point.sh"]

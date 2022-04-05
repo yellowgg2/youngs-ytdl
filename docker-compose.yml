@@ -5,6 +5,10 @@ services:
     image: ytdlbot
     build:
       context: .
+      args:
+        PUID: 1032
+        PGID: 100
+        UNAME: downloaduser
     restart: always
     environment:
       - BOT_API_TOKEN=Your bot token here
