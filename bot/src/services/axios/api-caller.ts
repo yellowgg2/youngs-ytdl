@@ -47,6 +47,7 @@ export default class ApiCaller {
         if (matches != null && matches[1]) {
           filename = matches[1].replace(/['"]/g, "");
           filename = decodeURI(filename);
+          filename = filename.replace(/[\|]|%2C/g, "_");
         }
 
         let buildFileName = "";
@@ -71,10 +72,21 @@ export default class ApiCaller {
           let file = fs.createWriteStream(
             `${downloadChannelDir}/${buildFileName}`
           );
+
+          file.on("finish", function () {
+            glog.info(
+              `[Line - 77][File - api-caller.ts] ${buildFileName} completed`
+            );
+          });
+
+          file.on("error", function (err) {
+            glog.error(`[Line - 84][File - api-caller.ts] %o`, err);
+          });
+
           res.data.pipe(file);
         } catch (error) {
           glog.error(`[Line - 44][File - api-caller.ts] %o`, error);
-          throw error;
+          //   throw error;
         }
         return `${buildFileName}`;
       });
