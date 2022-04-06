@@ -18,9 +18,23 @@ export default class BotService {
   private _fileTypeMsg = "🎫 파일 타입을 선택해주세요";
 
   static addChannelToFileName = false;
+  _addChannelNameToFileNameKey = "addChannelNameToFileName";
   static addUploadDateToFileName = false;
+  _addUploadDateNameToFileNameKey = "addUploadDateNameToFileName";
 
-  private constructor() {}
+  private constructor() {
+    DbHandler.getGlobalOptions().then(options => {
+      for (let option of options) {
+        if (option.option_key === this._addUploadDateNameToFileNameKey) {
+          BotService.addUploadDateToFileName =
+            option.option_value === "on" ? true : false;
+        } else if (option.option_key === this._addChannelNameToFileNameKey) {
+          BotService.addChannelToFileName =
+            option.option_value === "on" ? true : false;
+        }
+      }
+    });
+  }
 
   static getInstance() {
     if (!BotService.instance) {
@@ -319,6 +333,12 @@ export default class BotService {
                 ? `😀 파일 이름에 채널이름이 들어갑니다.`
                 : `😱 파일 이름에 채널이름이 빠집니다.`
             );
+            DbHandler.upsertOptions(
+              this._addChannelNameToFileNameKey,
+              BotService.addChannelToFileName ? "on" : "off"
+            ).catch(e =>
+              glog.error(`[Line - 326][File - bot-service.ts] %o`, e)
+            );
           });
           break;
         case /\/udtof/.test(cmd[0]):
@@ -330,6 +350,12 @@ export default class BotService {
               BotService.addUploadDateToFileName
                 ? `😀 파일 이름에 업로드 날짜가 들어갑니다.`
                 : `😱 파일 이름에 업로드 날짜가 빠집니다.`
+            );
+            DbHandler.upsertOptions(
+              this._addUploadDateNameToFileNameKey,
+              BotService.addUploadDateToFileName ? "on" : "off"
+            ).catch(e =>
+              glog.error(`[Line - 326][File - bot-service.ts] %o`, e)
             );
           });
           break;
