@@ -105,7 +105,7 @@ export default class BotService {
     helpMsg += "/udtof - 업로드 날짜를 저장 파일 이름에 추가\n";
 
     helpMsg +=
-      "\n-----------------\nudtof, chtof 명령은 서버를 재설치하면 리셋됩니다.\n그리고 모든 사용자에게 적용됩니다.";
+      "\n-----------------\nudtof, chtof 명령은 실행할 때마다 토글되며,\n모든 사용자에게 적용됩니다.";
     this.sendMsg(chatId, helpMsg);
   }
 
