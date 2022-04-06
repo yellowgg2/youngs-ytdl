@@ -47,43 +47,39 @@ export default class BotService {
   start() {
     botInstance.on("message", this._messageHandler);
     botInstance.on("polling_error", err => console.log(err));
-    botInstance.on("callback_query", msg => {
+    botInstance.on("callback_query", async msg => {
       let chatId = msg.message?.chat.id;
       let text = msg.message?.text;
       let username = msg.from.username;
       let fileType = msg.data;
 
-      if (text === this._fileTypeMsg) {
-        // 파일타입 선택 버튼
-        if (fileType === "none") {
-          DbHandler.deleteAllFileType(username!)
-            .then(result => {
-              botInstance.answerCallbackQuery(msg.id).then(() => {
-                this.sendMsg(chatId!, `🌈 ${result}`);
-              });
-            })
-            .catch(e => glog.error(e));
+      try {
+        if (text === this._fileTypeMsg) {
+          // 파일타입 선택 버튼
+          if (fileType === "none") {
+            let result = await DbHandler.deleteAllFileType(username!);
+            await botInstance.answerCallbackQuery(msg.id);
+            this.sendMsg(chatId!, `🌈 ${result}`);
+          } else {
+            let result = await this.setDefaultFileType(
+              chatId!,
+              username,
+              fileType
+            );
+            await botInstance.answerCallbackQuery(msg.id);
+            this.sendMsg(chatId!, `🌈 ${result}`);
+          }
         } else {
-          this.setDefaultFileType(chatId!, username, fileType)
-            .then(result => {
-              botInstance.answerCallbackQuery(msg.id).then(() => {
-                this.sendMsg(chatId!, `🌈 ${result}`);
-              });
-            })
-            .catch(e => glog.error(e));
+          // 다운로드 url
+          let result = await ApiCaller.getInstance().getContent(
+            text!,
+            fileType
+          );
+          await botInstance.answerCallbackQuery(msg.id);
+          this.sendMsg(chatId!, `🎉 다운로드 완료\n${result}`);
         }
-      } else {
-        // 다운로드 url
-        ApiCaller.getInstance()
-          .getContent(text!, fileType)
-          .then(result => {
-            botInstance.answerCallbackQuery(msg.id).then(() => {
-              this.sendMsg(chatId!, `🎉 다운로드 완료\n${result}`);
-            });
-          })
-          .catch(e => {
-            this.sendMsg(chatId!, `👿 ${e}`);
-          });
+      } catch (error) {
+        this.sendMsg(chatId!, `👿 ${error}`);
       }
     });
   }

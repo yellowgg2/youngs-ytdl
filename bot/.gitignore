@@ -5,6 +5,7 @@ logs/
 *.mp3
 *.db
 .env.dev
+.env
 ### Node ###
 # Logs
 logs
