@@ -28,7 +28,7 @@ export default class DbHandler {
   static async getGlobalOptions(): Promise<Array<IYtdlGlobalOption>> {
     let result: Array<IYtdlGlobalOption> =
       await DbService.getInstance().selectQuery(
-        `SELECT key, value FROM ytdl_option;`
+        `SELECT option_key, option_value FROM ytdl_option;`
       );
 
     return result;
