@@ -4,6 +4,7 @@ lastwatch
 logs/
 *.mp3
 *.db
+.env.dev
 ### Node ###
 # Logs
 logs
