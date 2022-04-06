@@ -47,7 +47,7 @@ export default class ApiCaller {
     if (matches != null && matches[1]) {
       filename = matches[1].replace(/['"]/g, "");
       filename = decodeURI(filename);
-      filename = filename.replace(/[\|]|%2C/g, "_");
+      filename = filename.replace(/[\|]|%2C|%23/g, "");
     }
 
     let buildFileName = "";
