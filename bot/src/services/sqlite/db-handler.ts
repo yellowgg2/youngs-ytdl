@@ -11,7 +11,29 @@ interface IYtdlFileType {
   filetype: string;
 }
 
+interface IYtdlGlobalOption {
+  optionKey: string;
+  optionValue: string;
+}
+
 export default class DbHandler {
+  static async upsertOptions(key: string, value: string) {
+    await DbService.getInstance().writeQuery(
+      `INSERT INTO ytdl_option(option_key, option_value) 
+      VALUES(${key}, ${value}) 
+      ON CONFLICT(option_key) DO UPDATE SET option_value = '${value}';`
+    );
+  }
+
+  static async getGlobalOptions(): Promise<Array<IYtdlGlobalOption>> {
+    let result: Array<IYtdlGlobalOption> =
+      await DbService.getInstance().selectQuery(
+        `SELECT key, value FROM ytdl_option;`
+      );
+
+    return result;
+  }
+
   static async insertNewUser(
     username: string,
     firstName: string,

@@ -9,6 +9,7 @@
         "glog",
         "setft",
         "showft",
+        "upsert",
         "upuser",
         "whoisthis",
         "ytdl"

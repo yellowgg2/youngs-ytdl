@@ -42,10 +42,22 @@ export default class DbService {
     await this.writeQuery(fileTypeTable);
   }
 
+  private async createOptionsTable() {
+    let optionTable = `
+    CREATE TABLE IF NOT EXISTS ytdl_option (
+        option_key TEXT PRIMARY KEY,
+        option_value TEXT,
+      )
+  `;
+
+    await this.writeQuery(optionTable);
+  }
+
   async createTable() {
     return Promise.all([
       this.createUserTable(),
-      this.createUserFileTypeTable()
+      this.createUserFileTypeTable(),
+      this.createOptionsTable()
     ]);
   }
 
