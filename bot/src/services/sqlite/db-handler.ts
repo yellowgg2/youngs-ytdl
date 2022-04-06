@@ -12,15 +12,15 @@ interface IYtdlFileType {
 }
 
 interface IYtdlGlobalOption {
-  optionKey: string;
-  optionValue: string;
+  option_key: string;
+  option_value: string;
 }
 
 export default class DbHandler {
   static async upsertOptions(key: string, value: string) {
     await DbService.getInstance().writeQuery(
       `INSERT INTO ytdl_option(option_key, option_value) 
-      VALUES(${key}, ${value}) 
+      VALUES('${key}', '${value}') 
       ON CONFLICT(option_key) DO UPDATE SET option_value = '${value}';`
     );
   }

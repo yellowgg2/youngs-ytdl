@@ -46,7 +46,7 @@ export default class DbService {
     let optionTable = `
     CREATE TABLE IF NOT EXISTS ytdl_option (
         option_key TEXT PRIMARY KEY,
-        option_value TEXT,
+        option_value TEXT
       )
   `;
 
