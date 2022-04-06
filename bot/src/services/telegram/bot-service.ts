@@ -58,7 +58,6 @@ export default class BotService {
           // 파일타입 선택 버튼
           if (fileType === "none") {
             let result = await DbHandler.deleteAllFileType(username!);
-            await botInstance.answerCallbackQuery(msg.id);
             this.sendMsg(chatId!, `🌈 ${result}`);
           } else {
             let result = await this.setDefaultFileType(
@@ -66,7 +65,6 @@ export default class BotService {
               username,
               fileType
             );
-            await botInstance.answerCallbackQuery(msg.id);
             this.sendMsg(chatId!, `🌈 ${result}`);
           }
         } else {
@@ -75,7 +73,6 @@ export default class BotService {
             text!,
             fileType
           );
-          await botInstance.answerCallbackQuery(msg.id);
           this.sendMsg(chatId!, `🎉 다운로드 완료\n${result}`);
         }
       } catch (error) {
