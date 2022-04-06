@@ -31,64 +31,63 @@ export default class ApiCaller {
     return ApiCaller.instance;
   }
 
-  getContent(url: string, type: string = "mp3") {
-    return this._axiosCaller
-      .get("/", { responseType: "stream", params: { format: type, url } })
-      .then(async res => {
-        if (res.status !== 200) {
-          glog.error(`[Line - 34][File - api-caller.ts] Unknown URL`);
-          throw res.statusText;
-        }
-        let filename = "";
+  async getContent(url: string, type: string = "mp3") {
+    let res = await this._axiosCaller.get("/", {
+      responseType: "stream",
+      params: { format: type, url }
+    });
+    if (res.status !== 200) {
+      glog.error(`[Line - 34][File - api-caller.ts] Unknown URL`);
+      throw res.statusText;
+    }
+    let filename = "";
 
-        let filenameRegex =
-          /filename\*?=['"]?(?:UTF-\d['"]*)?([^;\r\n"']*)['"]?;?/;
-        let matches = filenameRegex.exec(res.headers["content-disposition"]);
-        if (matches != null && matches[1]) {
-          filename = matches[1].replace(/['"]/g, "");
-          filename = decodeURI(filename);
-          filename = filename.replace(/[\|]|%2C/g, "_");
-        }
+    let filenameRegex = /filename\*?=['"]?(?:UTF-\d['"]*)?([^;\r\n"']*)['"]?;?/;
+    let matches = filenameRegex.exec(res.headers["content-disposition"]);
+    if (matches != null && matches[1]) {
+      filename = matches[1].replace(/['"]/g, "");
+      filename = decodeURI(filename);
+      filename = filename.replace(/[\|]|%2C/g, "_");
+    }
 
-        let buildFileName = "";
-        let channel = decodeURI(res.headers["cc-channel"]);
-        let uploadDate = res.headers["cc-uploaddate"];
+    let buildFileName = "";
+    let channel = decodeURI(res.headers["cc-channel"]);
+    let uploadDate = res.headers["cc-uploaddate"];
 
-        let downloadChannelDir = `./download/${channel}`;
+    let downloadChannelDir = `./download/${channel}`;
 
-        if (BotService.addChannelToFileName) {
-          buildFileName += `${channel}_`;
-        }
+    if (BotService.addChannelToFileName) {
+      buildFileName += `${channel}_`;
+    }
 
-        if (BotService.addUploadDateToFileName) {
-          buildFileName += `${uploadDate}_`;
-        }
+    if (BotService.addUploadDateToFileName) {
+      buildFileName += `${uploadDate}_`;
+    }
 
-        buildFileName += filename;
-        try {
-          if (!fs.existsSync(downloadChannelDir)) {
-            fs.mkdirSync(downloadChannelDir);
-          }
-          let file = fs.createWriteStream(
-            `${downloadChannelDir}/${buildFileName}`
-          );
+    buildFileName += filename;
+    if (!fs.existsSync(downloadChannelDir)) {
+      fs.mkdirSync(downloadChannelDir);
+    }
+    let file = fs.createWriteStream(`${downloadChannelDir}/${buildFileName}`);
 
-          file.on("finish", function () {
-            glog.info(
-              `[Line - 77][File - api-caller.ts] ${buildFileName} completed`
-            );
-          });
-
-          file.on("error", function (err) {
-            glog.error(`[Line - 84][File - api-caller.ts] %o`, err);
-          });
-
-          res.data.pipe(file);
-        } catch (error) {
-          glog.error(`[Line - 44][File - api-caller.ts] %o`, error);
-          //   throw error;
-        }
-        return `${buildFileName}`;
+    // Promise.race()
+    let finishPromise = new Promise((resolve, _) => {
+      file.on("finish", function () {
+        glog.info(
+          `[Line - 77][File - api-caller.ts] ${buildFileName} completed`
+        );
+        resolve(buildFileName);
       });
+    });
+    let errorPromise = new Promise((_, reject) => {
+      file.on("error", function (err) {
+        glog.error(`[Line - 84][File - api-caller.ts] %o`, err.message);
+        reject(err.message);
+      });
+    });
+
+    res.data.pipe(file);
+
+    return await Promise.race([finishPromise, errorPromise]);
   }
 }
