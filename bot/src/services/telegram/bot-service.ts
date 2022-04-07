@@ -93,6 +93,11 @@ export default class BotService {
     helpMsg += "/allusers - 모든 사용자 보기\n";
     helpMsg += "/setft - 기본 파일 타입 지정하기\n";
     helpMsg += "/showft - 기본 파일 타입 보기\n";
+    helpMsg += "\n😏 부가기능";
+    helpMsg += "다운로드 완료 메세지에 reply로\n";
+    helpMsg += "아래 단어 중 하나 입력하면\n저장 파일을 삭제합니다\n\n";
+
+    helpMsg += "지우기, 삭제, d, del, delete";
 
     this.sendMsg(chatId, helpMsg);
   }
