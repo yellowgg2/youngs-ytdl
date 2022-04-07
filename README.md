@@ -24,6 +24,13 @@
 
     <img src="./screenshots/user_menu.png" alt="drawing" width="300"/>
 
+- 파일 삭제
+
+  - 다운로드 완료 메세지에 reply로 아래 단어 중 하나 입력하면 저장 파일을 삭제합니다
+  - `지우기, 삭제, d, del, delete`
+
+    <img src="./screenshots/delete_file.png" alt="drawing" width="300"/>
+
 - 관리자 메뉴
 
   - 설치 시 `docker-compose.yml`에 `ADMIN_USERNAME`에 등록한 아이디가 관리자
