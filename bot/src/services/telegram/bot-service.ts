@@ -12,6 +12,12 @@ import {
 import ApiCaller from "../axios/api-caller";
 import { glog } from "../logger/custom-logger";
 import DbHandler from "../sqlite/db-handler";
+import fs from "fs";
+
+enum CheckReplyForDelete {
+  StopProcessing = 1,
+  KeepProcessing
+}
 
 export default class BotService {
   private static instance: BotService;
@@ -69,6 +75,7 @@ export default class BotService {
           }
         } else {
           // 다운로드 url
+          this.sendMsg(chatId!, `😊 다운로드를 시작합니다. [${fileType}]`);
           let result = await ApiCaller.getInstance().getContent(
             text!,
             fileType
@@ -279,9 +286,48 @@ export default class BotService {
     });
   }
 
+  checkReplyAndDeleteFile(msg: TelegramBot.Message): CheckReplyForDelete {
+    const chatId = msg.chat.id;
+    let channel = msg.reply_to_message?.text?.split("\n")?.[1] ?? null;
+
+    // 해당 메세지를 지우겠다는 의미
+    if (channel !== null && msg.text === "삭제") {
+      let downloadChannelDir = `./download/${channel.replace("채널명: ", "")}`;
+      let filename = msg.reply_to_message?.text?.split("\n")?.[3] ?? null;
+      if (
+        filename !== null &&
+        fs.existsSync(`${downloadChannelDir}/${filename}`)
+      ) {
+        fs.unlink(`${downloadChannelDir}/${filename}`, err => {
+          if (err) {
+            this.sendMsg(chatId!, err.message);
+            return;
+          }
+          botInstance.deleteMessage(
+            chatId,
+            `${msg.reply_to_message?.message_id}`
+          );
+          this.sendMsg(chatId!, "🎊 성공적으로 삭제했습니다.");
+        });
+      }
+      return CheckReplyForDelete.StopProcessing;
+    } else if (channel !== null && msg.text !== "삭제") {
+      this.sendMsg(chatId!, "😥 해당 명령은 없어요!");
+      return CheckReplyForDelete.StopProcessing;
+    }
+
+    return CheckReplyForDelete.KeepProcessing;
+  }
+
   private _messageHandler = (msg: TelegramBot.Message): void => {
     const chatId = msg.chat.id;
     const username = msg.from?.username;
+
+    if (
+      this.checkReplyAndDeleteFile(msg) === CheckReplyForDelete.StopProcessing
+    ) {
+      return;
+    }
 
     if (msg.entities && msg.entities[0].type === "bot_command") {
       const cmd = msg.text?.split(" ") ?? [""];
@@ -385,6 +431,10 @@ export default class BotService {
           DbHandler.getAllFileTypeForUser(username!).then(results => {
             if (results.length > 0) {
               for (let type of results) {
+                this.sendMsg(
+                  chatId!,
+                  `😊 다운로드를 시작합니다. [${type.filetype}]`
+                );
                 ApiCaller.getInstance()
                   .getContent(msg.text!, type.filetype)
                   .then(result => {

@@ -76,7 +76,9 @@ export default class ApiCaller {
         glog.info(
           `[Line - 77][File - api-caller.ts] ${buildFileName} completed`
         );
-        resolve(buildFileName);
+        resolve(
+          `채널명: ${channel}\n업로드 날짜: ${uploadDate}\n${buildFileName}`
+        );
       });
     });
     let errorPromise = new Promise((_, reject) => {
