@@ -11,9 +11,14 @@ interface IYtdlFileType {
   filetype: string;
 }
 
-interface IYtdlGlobalOption {
+export interface IYtdlGlobalOption {
   option_key: string;
   option_value: string;
+}
+
+export interface IYtdlGlobalOptionToObj {
+  addUploadDateNameToFileName?: string;
+  addChannelNameToFileName?: string;
 }
 
 export default class DbHandler {
