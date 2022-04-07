@@ -286,12 +286,21 @@ export default class BotService {
     });
   }
 
+  private isDeleteWords(text: string): boolean {
+    return (
+      text === "지우기" ||
+      text === "삭제" ||
+      text === "d" ||
+      text === "del" ||
+      text === "delete"
+    );
+  }
   checkReplyAndDeleteFile(msg: TelegramBot.Message): CheckReplyForDelete {
     const chatId = msg.chat.id;
     let channel = msg.reply_to_message?.text?.split("\n")?.[1] ?? null;
 
     // 해당 메세지를 지우겠다는 의미
-    if (channel !== null && msg.text === "삭제") {
+    if (channel !== null && this.isDeleteWords(msg.text ?? "")) {
       let downloadChannelDir = `./download/${channel.replace("채널명: ", "")}`;
       let filename = msg.reply_to_message?.text?.split("\n")?.[3] ?? null;
       if (
