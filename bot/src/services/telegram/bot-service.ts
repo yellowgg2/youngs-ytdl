@@ -11,8 +11,9 @@ import {
 } from "../../global-bot-config";
 import ApiCaller from "../axios/api-caller";
 import { glog } from "../logger/custom-logger";
-import DbHandler from "../sqlite/db-handler";
+import DbHandler, { IYtdlGlobalOptionToObj } from "../sqlite/db-handler";
 import fs from "fs";
+import TelegramModel from "../../models/telegram-model";
 
 enum CheckReplyForDelete {
   StopProcessing = 1,
@@ -23,22 +24,27 @@ export default class BotService {
   private static instance: BotService;
   private _fileTypeMsg = "🎫 파일 타입을 선택해주세요";
 
-  static addChannelToFileName = false;
   _addChannelNameToFileNameKey = "addChannelNameToFileName";
-  static addUploadDateToFileName = false;
   _addUploadDateNameToFileNameKey = "addUploadDateNameToFileName";
+
+  private _tm = new TelegramModel();
+  private _globalOptions: IYtdlGlobalOptionToObj = {};
+
+  public get globalOptions() {
+    return this._globalOptions;
+  }
+
+  public set globalOptions(options: IYtdlGlobalOptionToObj) {
+    this._globalOptions = options;
+  }
 
   private constructor() {
     DbHandler.getGlobalOptions().then(options => {
-      for (let option of options) {
-        if (option.option_key === this._addUploadDateNameToFileNameKey) {
-          BotService.addUploadDateToFileName =
-            option.option_value === "on" ? true : false;
-        } else if (option.option_key === this._addChannelNameToFileNameKey) {
-          BotService.addChannelToFileName =
-            option.option_value === "on" ? true : false;
-        }
-      }
+      this._globalOptions = this._tm.arrayToObj(options);
+      glog.info(
+        `[Line - 44][File - bot-service.ts] Show Global Options %o`,
+        this._globalOptions
+      );
     });
   }
 
@@ -80,7 +86,7 @@ export default class BotService {
             text!,
             fileType
           );
-          this.sendMsg(chatId!, `🎉 다운로드 완료\n${result}`);
+          this.sendMsg(chatId!, `🎉 다운로드 완료 [${fileType}]\n${result}`);
         }
       } catch (error) {
         this.sendMsg(chatId!, `👿 ${error}`);
@@ -379,16 +385,19 @@ export default class BotService {
           break;
         case /\/chtof/.test(cmd[0]):
           this.adminCommand(chatId, username, () => {
-            BotService.addChannelToFileName = !BotService.addChannelToFileName;
+            this._globalOptions.addChannelNameToFileName =
+              this._globalOptions.addChannelNameToFileName === "on"
+                ? "off"
+                : "on";
             this.sendMsg(
               chatId!,
-              BotService.addChannelToFileName
+              this._globalOptions.addChannelNameToFileName === "on"
                 ? `😀 파일 이름에 채널이름이 들어갑니다.`
                 : `😱 파일 이름에 채널이름이 빠집니다.`
             );
             DbHandler.upsertOptions(
               this._addChannelNameToFileNameKey,
-              BotService.addChannelToFileName ? "on" : "off"
+              this._globalOptions.addChannelNameToFileName
             ).catch(e =>
               glog.error(`[Line - 326][File - bot-service.ts] %o`, e)
             );
@@ -396,17 +405,19 @@ export default class BotService {
           break;
         case /\/udtof/.test(cmd[0]):
           this.adminCommand(chatId, username, () => {
-            BotService.addUploadDateToFileName =
-              !BotService.addUploadDateToFileName;
+            this._globalOptions.addUploadDateNameToFileName =
+              this._globalOptions.addUploadDateNameToFileName === "on"
+                ? "off"
+                : "on";
             this.sendMsg(
               chatId!,
-              BotService.addUploadDateToFileName
+              this._globalOptions.addUploadDateNameToFileName === "on"
                 ? `😀 파일 이름에 업로드 날짜가 들어갑니다.`
                 : `😱 파일 이름에 업로드 날짜가 빠집니다.`
             );
             DbHandler.upsertOptions(
               this._addUploadDateNameToFileNameKey,
-              BotService.addUploadDateToFileName ? "on" : "off"
+              this._globalOptions.addUploadDateNameToFileName
             ).catch(e =>
               glog.error(`[Line - 326][File - bot-service.ts] %o`, e)
             );
@@ -452,7 +463,10 @@ export default class BotService {
                 ApiCaller.getInstance()
                   .getContent(msg.text!, type.filetype)
                   .then(result => {
-                    this.sendMsg(chatId!, `🎉 다운로드 완료\n${result}`);
+                    this.sendMsg(
+                      chatId!,
+                      `🎉 다운로드 완료 [${type.filetype}]\n${result}`
+                    );
                   })
                   .catch(e => {
                     this.sendMsg(chatId!, `👿 ${e}`);

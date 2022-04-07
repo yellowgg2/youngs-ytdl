@@ -3,6 +3,7 @@ import fs from "fs";
 import dotenv from "dotenv";
 import { glog } from "../logger/custom-logger";
 import BotService from "../telegram/bot-service";
+import AxiosModel from "../../models/axios-model";
 dotenv.config();
 
 interface ICallerOption {
@@ -31,6 +32,25 @@ export default class ApiCaller {
     return ApiCaller.instance;
   }
 
+  buildFilename(channel: string, uploadDate: string): string {
+    let buildFileName = "";
+
+    if (
+      BotService.getInstance().globalOptions.addChannelNameToFileName === "on"
+    ) {
+      buildFileName += `${channel}_`;
+    }
+
+    if (
+      BotService.getInstance().globalOptions.addUploadDateNameToFileName ===
+      "on"
+    ) {
+      buildFileName += `${uploadDate}_`;
+    }
+
+    return buildFileName;
+  }
+
   async getContent(url: string, type: string = "mp3") {
     let res = await this._axiosCaller.get("/", {
       responseType: "stream",
@@ -40,37 +60,23 @@ export default class ApiCaller {
       glog.error(`[Line - 34][File - api-caller.ts] Unknown URL`);
       throw res.statusText;
     }
-    let filename = "";
 
-    let filenameRegex = /filename\*?=['"]?(?:UTF-\d['"]*)?([^;\r\n"']*)['"]?;?/;
-    let matches = filenameRegex.exec(res.headers["content-disposition"]);
-    if (matches != null && matches[1]) {
-      filename = matches[1].replace(/['"]/g, "");
-      filename = decodeURI(filename);
-      filename = filename.replace(/[\|]|%2C|%23/g, "");
-    }
+    let am = new AxiosModel();
+    let filename = am.extractFilenameFromContentDisposition(
+      res.headers["content-disposition"]
+    );
 
-    let buildFileName = "";
     let channel = decodeURI(res.headers["cc-channel"]);
     let uploadDate = res.headers["cc-uploaddate"];
-
+    let buildFileName = this.buildFilename(channel, uploadDate) + filename;
     let downloadChannelDir = `./download/${channel}`;
 
-    if (BotService.addChannelToFileName) {
-      buildFileName += `${channel}_`;
-    }
-
-    if (BotService.addUploadDateToFileName) {
-      buildFileName += `${uploadDate}_`;
-    }
-
-    buildFileName += filename;
     if (!fs.existsSync(downloadChannelDir)) {
       fs.mkdirSync(downloadChannelDir);
     }
+
     let file = fs.createWriteStream(`${downloadChannelDir}/${buildFileName}`);
 
-    // Promise.race()
     let finishPromise = new Promise((resolve, _) => {
       file.on("finish", function () {
         glog.info(
