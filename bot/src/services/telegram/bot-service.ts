@@ -81,17 +81,60 @@ export default class BotService {
           }
         } else {
           // 다운로드 url
-          this.sendMsg(chatId!, `😊 다운로드를 시작합니다. [${fileType}]`);
-          let result = await ApiCaller.getInstance().getContent(
-            text!,
-            fileType
-          );
-          this.sendMsg(chatId!, `🎉 다운로드 완료 [${fileType}]\n${result}`);
+          if (this.isPlayList(text!) === true) {
+            await this.downloadPlayList(chatId!, [fileType!], text!);
+            return;
+          }
+          await this.downloadSingleFile(chatId!, [fileType!], text!);
         }
       } catch (error) {
         this.sendMsg(chatId!, `👿 ${error}`);
       }
     });
+  }
+
+  async downloadPlayList(
+    chatId: number,
+    fileTypes: Array<string>,
+    url: string
+  ) {
+    this.sendMsg(chatId!, `📃 플레이 리스트를 검색 중입니다.`);
+    let playList = await ApiCaller.getInstance().getRssContentFromPlaylist(url);
+    this.sendMsg(
+      chatId!,
+      `📃 플레이 리스트를 검색 완료. (${playList.items.length}개 항목)`
+    );
+
+    let title = playList.title;
+    let songs = playList.items;
+
+    for (let song of songs) {
+      for (let type of fileTypes) {
+        this.sendMsg(
+          chatId!,
+          `😊 다운로드를 시작합니다.\n\n[${song.title}] [${type}]`
+        );
+        let result = await ApiCaller.getInstance().getContent(
+          song.link[0],
+          type,
+          true,
+          title
+        );
+        this.sendMsg(chatId!, `🎉 다운로드 완료 [${type}]\n${result}`);
+      }
+    }
+  }
+
+  async downloadSingleFile(
+    chatId: number,
+    fileTypes: Array<string>,
+    url: string
+  ) {
+    for (let type of fileTypes) {
+      this.sendMsg(chatId!, `😊 다운로드를 시작합니다. [${type}]`);
+      let result = await ApiCaller.getInstance().getContent(url, type);
+      this.sendMsg(chatId!, `🎉 다운로드 완료 [${type}]\n${result}`);
+    }
   }
 
   showHelp(chatId: number) {
@@ -306,6 +349,11 @@ export default class BotService {
       text === "delete"
     );
   }
+
+  private isPlayList(text: string): boolean {
+    return text.includes("playlist?list=");
+  }
+
   checkReplyAndDeleteFile(msg: TelegramBot.Message): CheckReplyForDelete {
     const chatId = msg.chat.id;
     let channel = msg.reply_to_message?.text?.split("\n")?.[1] ?? null;
@@ -453,25 +501,27 @@ export default class BotService {
       this.authUserCommand(chatId, username, () => {
         let valid = /^(ftp|http|https):\/\/[^ "]+$/.test(msg.text!);
         if (valid === true) {
-          DbHandler.getAllFileTypeForUser(username!).then(results => {
+          if (this.isPlayList(msg.text!) === true) {
+            DbHandler.getAllFileTypeForUser(username!).then(async results => {
+              this.downloadPlayList(
+                chatId,
+                results.map(v => v.filetype),
+                msg.text!
+              ).catch(e => {
+                this.sendMsg(chatId!, `👿 ${e}`);
+              });
+            });
+            return;
+          }
+          DbHandler.getAllFileTypeForUser(username!).then(async results => {
             if (results.length > 0) {
-              for (let type of results) {
-                this.sendMsg(
-                  chatId!,
-                  `😊 다운로드를 시작합니다. [${type.filetype}]`
-                );
-                ApiCaller.getInstance()
-                  .getContent(msg.text!, type.filetype)
-                  .then(result => {
-                    this.sendMsg(
-                      chatId!,
-                      `🎉 다운로드 완료 [${type.filetype}]\n${result}`
-                    );
-                  })
-                  .catch(e => {
-                    this.sendMsg(chatId!, `👿 ${e}`);
-                  });
-              }
+              this.downloadSingleFile(
+                chatId,
+                results.map(v => v.filetype),
+                msg.text!
+              ).catch(e => {
+                this.sendMsg(chatId!, `👿 ${e}`);
+              });
             } else {
               let ytdlUrl = msg.text!;
               this.sendFileTypeButtons(chatId, ytdlUrl);

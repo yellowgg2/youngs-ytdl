@@ -1,6 +1,7 @@
 import axios, { AxiosInstance } from "axios";
 import fs from "fs";
 import dotenv from "dotenv";
+import xml2js from "xml2js";
 import { glog } from "../logger/custom-logger";
 import BotService from "../telegram/bot-service";
 import AxiosModel from "../../models/axios-model";
@@ -10,6 +11,16 @@ interface ICallerOption {
   baseURL: string;
   headers?: Object;
   timeout?: number;
+}
+
+export interface IPlayList {
+  title: string;
+  items: Array<IPlayListItem>;
+}
+
+export interface IPlayListItem {
+  title: string;
+  link: string;
 }
 
 export default class ApiCaller {
@@ -51,7 +62,40 @@ export default class ApiCaller {
     return buildFileName;
   }
 
-  async getContent(url: string, type: string = "mp3") {
+  async getRssContentFromPlaylist(url: string): Promise<IPlayList> {
+    let res = await this._axiosCaller.get("/", {
+      //   responseType: "stream",
+      params: { format: "rss", url }
+    });
+    if (res.status !== 200) {
+      glog.error(`[Line - 34][File - api-caller.ts] Unknown URL`);
+      throw res.statusText;
+    }
+    return new Promise((resolve, reject) => {
+      xml2js.parseString(res.data, (err, result) => {
+        if (err) {
+          return reject(err);
+        }
+        let title = result.rss.channel[0]?.title?.[0];
+        let items = result.rss.channel[0]?.item;
+
+        if (title && items.length > 0) {
+          return resolve({
+            title,
+            items
+          });
+        }
+        reject("No items for the Playlist");
+      });
+    });
+  }
+
+  async getContent(
+    url: string,
+    type: string = "mp3",
+    isPlayList = false,
+    playListTitle = ""
+  ) {
     let res = await this._axiosCaller.get("/", {
       responseType: "stream",
       params: { format: type, url }
@@ -69,7 +113,15 @@ export default class ApiCaller {
     let channel = decodeURI(res.headers["cc-channel"]);
     let uploadDate = res.headers["cc-uploaddate"];
     let buildFileName = this.buildFilename(channel, uploadDate) + filename;
-    let downloadChannelDir = `./download/${channel}`;
+    let downloadChannelDir = isPlayList
+      ? `./download/${playListTitle}/${channel}`
+      : `./download/${channel}`;
+
+    let playListDir = `./download/${playListTitle}`;
+
+    if (isPlayList && !fs.existsSync(playListDir)) {
+      fs.mkdirSync(playListDir);
+    }
 
     if (!fs.existsSync(downloadChannelDir)) {
       fs.mkdirSync(downloadChannelDir);
