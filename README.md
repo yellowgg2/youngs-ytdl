@@ -76,3 +76,10 @@ docker-compose.yml의 env, args값 설명
 - `시놀로지` 사용자라면, Music folder에 마운트를 하고 싶으면 스크립트 안에 경로를 바꿔 준 후 indexing을 위해 `download-watch.sh`를 부팅 스케줄러로 걸어준다
   - 이 작업을 하지 않으면 `DS Audio`에서 파일이 다운로드 되어도 갱신이 안됨
 - `docker-compose up -d --build` 실행
+
+# 업데이트
+
+업데이트 시에는 아래 두 명령을 차례로 실행
+
+- git pull --recurse-submodules
+- docker-compose down && docker-compose up -d --build
