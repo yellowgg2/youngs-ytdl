@@ -8,7 +8,7 @@ export default class AxiosModel {
     if (matches != null && matches[1]) {
       filename = matches[1].replace(/['"]/g, "");
       filename = decodeURI(filename);
-      filename = filename.replace(/[\|]|%2C|%23/g, "");
+      filename = filename.replace(/[\|]|%2C|%23|%26|%3A/g, "");
     }
     return filename;
   }
