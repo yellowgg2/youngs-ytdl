@@ -12,10 +12,11 @@ I modified [ydls](https://hub.docker.com/r/mwader/ydls/dockerfile) original code
 
 - Download Youtube
 
+  - Supported Formats : `mp3, mp4, m4a, flac, ogg, wav, webm`
   - To download youtube, just send url to the bot and choose the format which you would like to download with
   - As soon as you choose a format, it will start downloading
   - Once downloading is completed, it will send back complete message.
-  - It will automatically download youtube if you set default file types with `setft` (multiple formats can be chosen)
+  - It will automatically download youtube without choosing a format if you set default file types with `setft` (multiple formats can be chosen)
 
     <img src="./screenshots/download_tube.png" alt="drawing" width="300"/>
 
@@ -30,24 +31,24 @@ I modified [ydls](https://hub.docker.com/r/mwader/ydls/dockerfile) original code
   - `help`: Show help menu
   - `allusers`: Show all users registered
   - `setft`: Set default file types. If do so, it won't ask file type to be downloaded. (Default file types can be cleared with choosing `none`)
-  - `showft`: Show default file types that I've set with `setft`
+  - `showft`: Show default file types that User have made with `setft`
 
     <img src="./screenshots/user_menu.png" alt="drawing" width="300"/>
 
 - Admin Menu
 
-  - `Admin` is the one who can add `User`
+  - `Admin` is the one who can manage `Users`
   - `adduser`: Add `User`, or `Admin`
   - `upuser`: Update `User` or `Admin` info, especially description or user type
   - `deluser`: Delete `User`
-  - `chtof`: Add `channel` to the filename that will be download (Toggled if you run this cmd again. **This will be applied to all users current and future users registered**)
-  - `udtof`: Add `Upload Date` to the filename that will be download (Toggled if you run this cmd again. **This will be applied to all users current and future users registered**)
+  - `chtof`: Add `channel` to the filename that will be download (Toggled if executed the cmd again. **This will be applied to all users current and future users registered**)
+  - `udtof`: Add `Upload Date` to the filename that will be download (Toggled if executed the cmd again. **This will be applied to all users current and future users registered**)
 
     <img src="./screenshots/admin_menu.png" alt="drawing" width="300"/>
 
 - Delete file downloaded accidentally
 
-  - To delete file, reply to `download completed` message with one of words below.
+  - To delete file from the download directory, reply to `download completed` message with one of the words below.
   - `지우기, 삭제, d, del, delete`
 
     <img src="./screenshots/delete_file.png" alt="drawing" width="300"/>
