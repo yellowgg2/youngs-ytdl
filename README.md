@@ -39,7 +39,7 @@
   - `upuser`: 사용자 정보 변경
   - `deluser`: 사용자 제거
   - `chtof`: 다운로드 파일 이름에 채널이름을 추가 (한번 더 실행하면 토글 됨, **봇을 사용하는 모든 사용자에게 적용**)
-  - `udtof`: 다운로드 파일 이름에 옵로드 날짜를 추가 (한번 더 실행하면 토글 됨, **봇을 사용하는 모든 사용자에게 적용**)
+  - `udtof`: 다운로드 파일 이름에 업로드 날짜를 추가 (한번 더 실행하면 토글 됨, **봇을 사용하는 모든 사용자에게 적용**)
 
     <img src="./screenshots/admin_menu.png" alt="drawing" width="300"/>
 
@@ -73,7 +73,7 @@ docker-compose.yml의 env, args값 설명
 - `docker-compose.yml` 파일의 environment와 args에 있는 PUID, PGID를 host 계정의 ID 와 일치 시켜야 함
 - `UNAME`은 변경할 필요 없음
 - `/ytdlbot/download` 경로를 host의 다운로드를 원하는 위치와 마운트
-- `시놀로지` 사용자라면, Music folder에 마운트를 하고 싶으면 스크립트 안에 경로를 바꿔 준 후 indexing을 위해 `download-watch.sh`를 부팅 스케줄러로 걸어준다
+- `시놀로지` 사용자이고, Music folder에 마운트를 하고 싶으면 스크립트 안에 경로를 바꿔 준 후 indexing을 위해 `download-watch.sh`를 부팅 스케줄러로 걸어준다
   - 이 작업을 하지 않으면 `DS Audio`에서 파일이 다운로드 되어도 갱신이 안됨
 - `docker-compose up -d --build` 실행
 
