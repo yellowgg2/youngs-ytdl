@@ -58,8 +58,8 @@ I modified [ydls](https://hub.docker.com/r/mwader/ydls/dockerfile) original code
 
 | key                       | desc                                                                                      | example        |
 | ------------------------- | ----------------------------------------------------------------------------------------- | -------------- |
-| `PUID`                    | host UID (`id -u`로 확인)                                                                 | 1000           |
-| `GUID`                    | host GID (`id -g`로 확인)                                                                 | 1000           |
+| `PUID`                    | host UID (Check with `id -u`)                                                             | 1000           |
+| `GUID`                    | host GID (Check with `id -g`)                                                             | 1000           |
 | `TELEGRAM_BOT_API_TOKEN`  | Bot Api Token. This can be optained with [Bot Father](https://t.me/botfather) in Telegram |                |
 | `TELEGRAM_ADMIN_USERNAME` | Telegram Id for `Admin`.                                                                  |                |
 | `TELEGRAM_ADMIN_DESC`     | Admin User Description                                                                    | SuperMan       |
