@@ -58,8 +58,8 @@ docker-compose.yml의 env, args값 설명
 
 | key              | 설명                                                         | 예시     |
 | ---------------- | ------------------------------------------------------------ | -------- |
-| `PUID`           | host PUID                                                    | 1000     |
-| `GUID`           | host GUID                                                    | 1000     |
+| `PUID`           | host UID (`id -u`로 확인)                                    | 1000     |
+| `GUID`           | host GID (`id -g`로 확인)                                    | 1000     |
 | `BOT_API_TOKEN`  | 봇 토큰                                                      |          |
 | `ADMIN_USERNAME` | 텔레그램 아이디 - 관리자 용 (보통 설치하는 사람 아이디 입력) |          |
 | `ADMIN_DESC`     | 관리자 설명                                                  |          |
