@@ -6,19 +6,19 @@ services:
     build:
       context: ./bot
       args:
-        PUID: 1032
-        PGID: 100
+        PUID: $PUID
+        PGID: $PGID
         UNAME: downloaduser
     restart: always
     environment:
-      - BOT_API_TOKEN=Your bot token here
-      - ADMIN_USERNAME=admin
-      - ADMIN_DESC=admin
-      - ADMIN_CHATID=admin chat id number
-      - PUID=1032
-      - PGID=100
+      - BOT_API_TOKEN=$TELEGRAM_BOT_API_TOKEN
+      - ADMIN_USERNAME=$TELEGRAM_ADMIN_USERNAME
+      - ADMIN_DESC=$TELEGRAM_ADMIN_DESC
+      - ADMIN_CHATID=$TELEGRAM_ADMIN_CHATID
+      - PUID=$PUID
+      - PGID=$PGID
     volumes:
-      - ./bot/download:/ytdlbot/download
+      - $DOWNLOAD_PATH:/ytdlbot/download
       - ./bot/db:/ytdlbot/db
   ytdl-service:
     container_name: ytdl-service
