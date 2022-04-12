@@ -4,11 +4,7 @@ import {
   InlineKeyboardButton,
   Row
 } from "node-telegram-keyboard-wrapper";
-import {
-  ADMIN_CHATID,
-  botInstance,
-  NON_AUTH_WARN_MSG
-} from "../../global-bot-config";
+import { ADMIN_CHATID, botInstance } from "../../global-bot-config";
 import ApiCaller from "../axios/api-caller";
 import { glog } from "../logger/custom-logger";
 import DbHandler, { IYtdlGlobalOptionToObj } from "../sqlite/db-handler";
