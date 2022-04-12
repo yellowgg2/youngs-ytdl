@@ -475,13 +475,18 @@ export default class BotService {
         if (valid === true) {
           if (this.isPlayList(msg.text!) === true) {
             DbHandler.getAllFileTypeForUser(username!).then(async results => {
-              this.downloadPlayList(
-                chatId,
-                results.map(v => v.filetype),
-                msg.text!
-              ).catch(e => {
-                this.sendMsg(chatId!, `👿 ${e}`);
-              });
+              if (results.length > 0) {
+                this.downloadPlayList(
+                  chatId,
+                  results.map(v => v.filetype),
+                  msg.text!
+                ).catch(e => {
+                  this.sendMsg(chatId!, `👿 ${e}`);
+                });
+              } else {
+                let ytdlUrl = msg.text!;
+                this.sendFileTypeButtons(chatId, ytdlUrl);
+              }
             });
             return;
           }
