@@ -57,7 +57,8 @@ export default class KoreanBot implements ILanguageBot {
   }
 
   startDownloading(title: string, type: string): string {
-    return `😊 다운로드를 시작합니다.\n\n[${title}] [${type}]`;
+    let localTitle = title !== "" ? `\n\n[${title}]` : "";
+    return `😊 다운로드를 시작합니다.${localTitle}[${type}]`;
   }
 
   warningFromBot(msg: string): string {

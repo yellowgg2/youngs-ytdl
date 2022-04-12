@@ -57,7 +57,8 @@ export default class EnglishBot implements ILanguageBot {
   }
 
   startDownloading(title: string, type: string): string {
-    return `😊 Start downloading \n\n[${title}] [${type}]`;
+    let localTitle = title !== "" ? `\n\n[${title}] ` : "";
+    return `😊 Start downloading ${localTitle}[${type}]`;
   }
 
   warningFromBot(msg: string): string {
