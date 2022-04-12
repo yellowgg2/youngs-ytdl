@@ -3,7 +3,43 @@ import KoreanBot from "./korean";
 
 require("dotenv").config();
 
-export interface ILanguageBot {}
+export interface ILanguageBot {
+  selectFileType: string;
+  searchingPlayList: string;
+  searchingCompleted(count: number): string;
+  downloadCompleted(type: string, result: string): string;
+  startDownloading(title: string, type: string): string;
+  showHelp: string;
+  showAdminHelp: string;
+  warningFromBot(msg: string): string;
+  unauthorizedUserComesIn(username: string): string;
+  howToAddUser: string;
+  newlyAddUserAdminCmd(id: string, desc: string): string;
+  successfullyAdded: string;
+  howToUpUser: string;
+  successfullyUpdated: string;
+  updateUserAdminCmd(id: string, desc: string): string;
+  howToDelUser: string;
+  successfullyDeleted: string;
+  deleteUserAdminCmd(id: string): string;
+  allowedUsers: string;
+  welcomeMessage: string;
+  noAuthUserWarnMsg: string;
+  notAdminWarn: string;
+  channelName: string;
+  uploadDate: string;
+  notACmd: string;
+  addChannelToFilename: string;
+  delChannelToFilename: string;
+  addUploadDateToFilename: string;
+  delUploadDateToFilename: string;
+  showDefaultFileTypes(username: string): string;
+  noDefaultFileTypes: string;
+  thisIsNotURL: string;
+  successfullyAddType(type: string): string;
+  successfullyDelType(type: string): string;
+  successfullyDeleteAllTypes: string;
+}
 
 export class LanguageFactory {
   private static instance: LanguageFactory;

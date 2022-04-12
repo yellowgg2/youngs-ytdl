@@ -1,3 +1,4 @@
+import { LF } from "../../language/language-factory";
 import DbService from "./db-service";
 
 interface IYtdlUsers {
@@ -115,12 +116,12 @@ export default class DbHandler {
         "INSERT INTO ytdl_filetype(username, filetype) VALUES (?, ?)",
         [username, type]
       );
-      return `성공적으로 [[ 추가 ]] 했습니다. [${type}]`;
+      return LF.str.successfullyAddType(type);
     } else {
       await DbService.getInstance().writeQuery(
         `DELETE FROM ytdl_filetype where username = '${username}' AND filetype = '${type}'`
       );
-      return `성공적으로 [[ 삭제 ]] 했습니다. [${type}]`;
+      return LF.str.successfullyDelType(type);
     }
   }
 
@@ -128,7 +129,7 @@ export default class DbHandler {
     await DbService.getInstance().writeQuery(
       `DELETE FROM ytdl_filetype where username = '${username}'`
     );
-    return `성공적으로 [[ 모든 ]] 타입을 삭제했습니다.`;
+    return LF.str.successfullyDeleteAllTypes;
   }
 
   static async isAdminUser(username: string): Promise<boolean> {
@@ -150,7 +151,7 @@ export default class DbHandler {
     // await DbHandler.deleteAllUser();
     await DbHandler.insertNewUser(
       process.env.ADMIN_USERNAME ?? "admin",
-      process.env.ADMIN_DESC ?? "관리자",
+      process.env.ADMIN_DESC ?? "admin",
       "admin"
     );
   }
