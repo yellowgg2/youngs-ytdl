@@ -77,6 +77,7 @@
 - `.env` 파일의 값을 본인에 맞게 설정
 - `Synology` 사용자 이며, `DS audio`와 함께 사용하고 싶은 사람
   - 부팅 스크립트로 repo에 첨부된 `download-watch.sh`를 실행하는 스케쥴러를 등록해야 함
+  - `download-watch.sh`의 `DOWNLOAD_PATH`값을 `DS Audio` 가 바라보는 위치로 변경
   - 이 작업을 하지 않으면 다운로드를 완료해도 해당 파일이 `DS audio`에서 보이지 않음
 - `docker-compose up -d --build` 실행
 
