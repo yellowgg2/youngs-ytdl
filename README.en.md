@@ -66,6 +66,7 @@ I modified [ydls](https://hub.docker.com/r/mwader/ydls/dockerfile) original code
 | `TELEGRAM_ADMIN_DESC`     | Admin User Description                                                                    | SuperMan       |
 | `TELEGRAM_ADMIN_CHATID`   | Telegram Chat id for `Admin` to receive message with once error occurs                    | 11223344       |
 | `DOWNLOAD_PATH`           | Download location in host machine                                                         | ./bot/download |
+| `BOT_LANG`                | Set language (ko: Korean, en: English)                                                    | ko or en       |
 
 # Installation
 

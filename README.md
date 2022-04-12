@@ -67,6 +67,7 @@
 | `TELEGRAM_ADMIN_DESC`     | 관리자 설명                                                  | 수퍼맨         |
 | `TELEGRAM_ADMIN_CHATID`   | 특정 명령이나 에러 발생 시 메세지를 보낼 chat id             | 11223344       |
 | `DOWNLOAD_PATH`           | host의 다운로드 위치                                         | ./bot/download |
+| `BOT_LANG`                | 언어 설정 (ko: 한국어, en: 영어)                             | ko or en       |
 
 # 설치
 
