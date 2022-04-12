@@ -21,6 +21,7 @@ export default class KoreanBot implements ILanguageBot {
   noDefaultFileTypes = `😪 등록된 파일이 없어요`;
   thisIsNotURL = "👿 이건 URL이 아니잖아!";
   successfullyDeleteAllTypes = `성공적으로 [[ 모든 ]] 타입을 삭제했습니다.`;
+  stopDownloadingPlaylist = "👀 플레이리스트 다운로드를 중지합니다.";
 
   channelName = "채널명: ";
   uploadDate = "업로드 날짜: ";
@@ -52,8 +53,12 @@ export default class KoreanBot implements ILanguageBot {
   searchingCompleted(count: number): string {
     return `📃 플레이 리스트를 검색 완료. (${count}개 항목)`;
   }
-  downloadCompleted(type: string, result: string): string {
-    return `🎉 다운로드 완료 [${type}]\n${result}`;
+  downloadCompleted(
+    type: string,
+    result: string,
+    remainCountStr: string = "1/1"
+  ): string {
+    return `🎉 다운로드 완료 [${type}]\n\n남은 갯수: ${remainCountStr}\n${result}`;
   }
 
   startDownloading(title: string, type: string): string {
