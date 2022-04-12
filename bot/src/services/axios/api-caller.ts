@@ -5,13 +5,8 @@ import xml2js from "xml2js";
 import { glog } from "../logger/custom-logger";
 import BotService from "../telegram/bot-service";
 import AxiosModel from "../../models/axios-model";
+import { LF } from "../../language/language-factory";
 dotenv.config();
-
-interface ICallerOption {
-  baseURL: string;
-  headers?: Object;
-  timeout?: number;
-}
 
 export interface IPlayList {
   title: string;
@@ -68,7 +63,7 @@ export default class ApiCaller {
       params: { format: "rss", url }
     });
     if (res.status !== 200) {
-      glog.error(`[Line - 34][File - api-caller.ts] Unknown URL`);
+      glog.error(`[Line - 34][File - api-caller.ts] ${res.statusText}`);
       throw res.statusText;
     }
     return new Promise((resolve, reject) => {
@@ -101,7 +96,7 @@ export default class ApiCaller {
       params: { format: type, url }
     });
     if (res.status !== 200) {
-      glog.error(`[Line - 34][File - api-caller.ts] Unknown URL`);
+      glog.error(`[Line - 34][File - api-caller.ts] ${res.statusText}`);
       throw res.statusText;
     }
 
@@ -135,7 +130,7 @@ export default class ApiCaller {
           `[Line - 77][File - api-caller.ts] ${buildFileName} completed`
         );
         resolve(
-          `채널명: ${channel}\n업로드 날짜: ${uploadDate}\n${buildFileName}`
+          `${LF.str.channelName}${channel}\n${LF.str.uploadDate}${uploadDate}\n${buildFileName}`
         );
       });
     });

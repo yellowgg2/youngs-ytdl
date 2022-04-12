@@ -14,6 +14,7 @@ import { glog } from "../logger/custom-logger";
 import DbHandler, { IYtdlGlobalOptionToObj } from "../sqlite/db-handler";
 import fs from "fs";
 import TelegramModel from "../../models/telegram-model";
+import { LF } from "../../language/language-factory";
 
 enum CheckReplyForDelete {
   StopProcessing = 1,
@@ -22,7 +23,7 @@ enum CheckReplyForDelete {
 
 export default class BotService {
   private static instance: BotService;
-  private _fileTypeMsg = "🎫 파일 타입을 선택해주세요";
+  private _fileTypeMsg = LF.str.selectFileType;
 
   _addChannelNameToFileNameKey = "addChannelNameToFileName";
   _addUploadDateNameToFileNameKey = "addUploadDateNameToFileName";
@@ -98,29 +99,23 @@ export default class BotService {
     fileTypes: Array<string>,
     url: string
   ) {
-    this.sendMsg(chatId!, `📃 플레이 리스트를 검색 중입니다.`);
+    this.sendMsg(chatId!, LF.str.searchingPlayList);
     let playList = await ApiCaller.getInstance().getRssContentFromPlaylist(url);
-    this.sendMsg(
-      chatId!,
-      `📃 플레이 리스트를 검색 완료. (${playList.items.length}개 항목)`
-    );
+    this.sendMsg(chatId!, LF.str.searchingCompleted(playList.items.length));
 
     let title = playList.title;
     let songs = playList.items;
 
     for (let song of songs) {
       for (let type of fileTypes) {
-        this.sendMsg(
-          chatId!,
-          `😊 다운로드를 시작합니다.\n\n[${song.title}] [${type}]`
-        );
+        this.sendMsg(chatId!, LF.str.startDownloading(song.title, type));
         let result = await ApiCaller.getInstance().getContent(
           song.link[0],
           type,
           true,
           title
         );
-        this.sendMsg(chatId!, `🎉 다운로드 완료 [${type}]\n${result}`);
+        this.sendMsg(chatId!, LF.str.downloadCompleted(type, result as string));
       }
     }
   }
@@ -131,36 +126,18 @@ export default class BotService {
     url: string
   ) {
     for (let type of fileTypes) {
-      this.sendMsg(chatId!, `😊 다운로드를 시작합니다. [${type}]`);
+      this.sendMsg(chatId!, LF.str.startDownloading("", type));
       let result = await ApiCaller.getInstance().getContent(url, type);
-      this.sendMsg(chatId!, `🎉 다운로드 완료 [${type}]\n${result}`);
+      this.sendMsg(chatId!, LF.str.downloadCompleted(type, result as string));
     }
   }
 
   showHelp(chatId: number) {
-    let helpMsg = "/help - 이 도움말 보기\n";
-    helpMsg += "/allusers - 모든 사용자 보기\n";
-    helpMsg += "/setft - 기본 파일 타입 지정하기\n";
-    helpMsg += "/showft - 기본 파일 타입 보기\n";
-    helpMsg += "\n😏 부가기능\n";
-    helpMsg += "다운로드 완료 메세지에 reply로\n";
-    helpMsg += "아래 단어 중 하나 입력하면\n저장 파일을 삭제합니다\n\n";
-
-    helpMsg += "지우기, 삭제, d, del, delete";
-
-    this.sendMsg(chatId, helpMsg);
+    this.sendMsg(chatId, LF.str.showHelp);
   }
 
   showAdminHelp(chatId: number) {
-    let helpMsg = "/adduser - 사용자 추가 명령\n";
-    helpMsg += "/upuser - 사용자 갱신\n";
-    helpMsg += "/deluser - 사용자 제거\n";
-    helpMsg += "/chtof - 채널 이름을 저장 파일이름에 추가\n";
-    helpMsg += "/udtof - 업로드 날짜를 저장 파일 이름에 추가\n";
-
-    helpMsg +=
-      "\n-----------------\nudtof, chtof 명령은 실행할 때마다 토글되며,\n모든 사용자에게 적용됩니다.";
-    this.sendMsg(chatId, helpMsg);
+    this.sendMsg(chatId, LF.str.showAdminHelp);
   }
 
   sendMsg(
@@ -172,21 +149,21 @@ export default class BotService {
   }
 
   sendMsgToAdmin(msg: string): void {
-    botInstance.sendMessage(ADMIN_CHATID, `WARNING FROM bot:\n${msg}`, {
+    botInstance.sendMessage(ADMIN_CHATID, LF.str.warningFromBot(msg), {
       parse_mode: "HTML"
     });
   }
 
   async checkAuthUser(username?: string): Promise<void> {
     if (!username) {
-      this.sendMsgToAdmin("Unauthorized user comes in");
+      this.sendMsgToAdmin(LF.str.unauthorizedUserComesIn("Unknown"));
       throw "whoisthis";
     }
     let auth = await DbHandler.isExistingUsername(username);
     if (auth) {
       return;
     } else {
-      this.sendMsgToAdmin(`Unauthorized user ${username}`);
+      this.sendMsgToAdmin(LF.str.unauthorizedUserComesIn(username));
       throw "no-auth";
     }
   }
@@ -198,13 +175,12 @@ export default class BotService {
     type: string = "user"
   ) {
     if (!id || !name) {
-      this.sendMsg(chatId, "🌈 사용법 : /adduser [id] [이름] [admin/user]");
+      this.sendMsg(chatId, LF.str.howToAddUser);
       return;
     }
-    this.sendMsgToAdmin("Hidden Cmd: 새로운 사용자 추가");
-    this.sendMsgToAdmin(`ID: ${id} NAME: ${name}`);
+    this.sendMsgToAdmin(LF.str.newlyAddUserAdminCmd(id, name));
     DbHandler.insertNewUser(id, name, type)
-      .then(() => this.sendMsg(chatId, "🌈 성공적으로 추가 되었습니다"))
+      .then(() => this.sendMsg(chatId, LF.str.successfullyAdded))
       .catch(e => glog.error(e));
   }
 
@@ -215,31 +191,29 @@ export default class BotService {
     type: string = "user"
   ) {
     if (!id || !name) {
-      this.sendMsg(chatId, "🌈 사용법 : /upuser [id] [이름] [admin/user]");
+      this.sendMsg(chatId, LF.str.howToUpUser);
       return;
     }
-    this.sendMsgToAdmin("Hidden Cmd: 새로운 사용자 갱신");
-    this.sendMsgToAdmin(`ID: ${id} NAME: ${name}`);
+    this.sendMsgToAdmin(LF.str.updateUserAdminCmd(id, name));
     DbHandler.updateUser(id, name, type)
-      .then(() => this.sendMsg(chatId, "🌈 성공적으로 갱신 되었습니다"))
+      .then(() => this.sendMsg(chatId, LF.str.successfullyUpdated))
       .catch(e => glog.error(e));
   }
 
   delUser(chatId: number, id: string | undefined) {
     if (!id) {
-      this.sendMsg(chatId, "🌈 사용법 : /deluser [id]");
+      this.sendMsg(chatId, LF.str.howToDelUser);
       return;
     }
-    this.sendMsgToAdmin("Hidden Cmd: 사용자 삭제");
-    this.sendMsgToAdmin(`ID: ${id}`);
+    this.sendMsgToAdmin(LF.str.deleteUserAdminCmd(id));
     DbHandler.deleteUser(id)
-      .then(() => this.sendMsg(chatId, "🌈 성공적으로 삭제 되었습니다"))
+      .then(() => this.sendMsg(chatId, LF.str.successfullyDeleted))
       .catch(e => glog.error(e));
   }
 
   showAllUsers(chatId: number) {
     DbHandler.getAllUsers().then(users => {
-      let allUsers = "⚠ 허용된 사용자 목록\n\n";
+      let allUsers = `${LF.str.allowedUsers}\n\n`;
       for (let user of users) {
         allUsers += `🎫 ${user.username}\n`;
         allUsers += `🤶 ${user.first_name}\n`;
@@ -263,7 +237,7 @@ export default class BotService {
   }
 
   startBot(chatId: number) {
-    this.sendMsg(chatId, "환영합니다. 처음 오신분은 관리자에게 문의하세요.");
+    this.sendMsg(chatId, LF.str.welcomeMessage);
   }
 
   authUserCommand(
@@ -272,14 +246,14 @@ export default class BotService {
     callback: () => any
   ) {
     if (!username) {
-      this.sendMsg(chatId, NON_AUTH_WARN_MSG);
+      this.sendMsg(chatId, LF.str.noAuthUserWarnMsg);
       return;
     }
     this.checkAuthUser(username)
       .then(() => {
         callback();
       })
-      .catch(e => this.sendMsg(chatId, NON_AUTH_WARN_MSG));
+      .catch(e => this.sendMsg(chatId, LF.str.noAuthUserWarnMsg));
   }
 
   adminCommand(
@@ -295,8 +269,7 @@ export default class BotService {
         if (admin) {
           callback();
         } else {
-          this.sendMsg(chatId, "👿 당신은 관리자가 아닙니다");
-          this.sendMsgToAdmin(`No Auth user ${username}`);
+          this.sendMsg(chatId, LF.str.notAdminWarn);
         }
       })
       .catch(e => glog.error(e));
@@ -360,7 +333,10 @@ export default class BotService {
 
     // 해당 메세지를 지우겠다는 의미
     if (channel !== null && this.isDeleteWords(msg.text ?? "")) {
-      let downloadChannelDir = `./download/${channel.replace("채널명: ", "")}`;
+      let downloadChannelDir = `./download/${channel.replace(
+        LF.str.channelName,
+        ""
+      )}`;
       let filename = msg.reply_to_message?.text?.split("\n")?.[3] ?? null;
       if (
         filename !== null &&
@@ -375,12 +351,12 @@ export default class BotService {
             chatId,
             `${msg.reply_to_message?.message_id}`
           );
-          this.sendMsg(chatId!, "🎊 성공적으로 삭제했습니다.");
+          this.sendMsg(chatId!, LF.str.successfullyDeleted);
         });
       }
       return CheckReplyForDelete.StopProcessing;
-    } else if (channel !== null && msg.text !== "삭제") {
-      this.sendMsg(chatId!, "😥 해당 명령은 없어요!");
+    } else if (channel !== null && !this.isDeleteWords(msg.text!)) {
+      this.sendMsg(chatId!, LF.str.notACmd);
       return CheckReplyForDelete.StopProcessing;
     }
 
@@ -440,8 +416,8 @@ export default class BotService {
             this.sendMsg(
               chatId!,
               this._globalOptions.addChannelNameToFileName === "on"
-                ? `😀 파일 이름에 채널이름이 들어갑니다.`
-                : `😱 파일 이름에 채널이름이 빠집니다.`
+                ? LF.str.addChannelToFilename
+                : LF.str.delChannelToFilename
             );
             DbHandler.upsertOptions(
               this._addChannelNameToFileNameKey,
@@ -460,8 +436,8 @@ export default class BotService {
             this.sendMsg(
               chatId!,
               this._globalOptions.addUploadDateNameToFileName === "on"
-                ? `😀 파일 이름에 업로드 날짜가 들어갑니다.`
-                : `😱 파일 이름에 업로드 날짜가 빠집니다.`
+                ? LF.str.addUploadDateToFilename
+                : LF.str.delUploadDateToFilename
             );
             DbHandler.upsertOptions(
               this._addUploadDateNameToFileNameKey,
@@ -481,13 +457,13 @@ export default class BotService {
           this.authUserCommand(chatId, username, () => {
             DbHandler.getAllFileTypeForUser(username!).then(results => {
               if (results.length > 0) {
-                let fileTypes = `😍 [${username}]님의 기본 파일타입입니다\n\n`;
+                let fileTypes = LF.str.showDefaultFileTypes(username!);
                 for (let type of results) {
                   fileTypes += `${type.filetype}\n`;
                 }
                 this.sendMsg(chatId!, fileTypes);
               } else {
-                this.sendMsg(chatId!, `😪 등록된 파일이 없어요`);
+                this.sendMsg(chatId!, LF.str.noDefaultFileTypes);
               }
             });
           });
@@ -528,7 +504,7 @@ export default class BotService {
             }
           });
         } else {
-          this.sendMsg(chatId, "👿 이건 URL이 아니잖아!");
+          this.sendMsg(chatId, LF.str.thisIsNotURL);
         }
       });
     }
