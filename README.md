@@ -20,6 +20,12 @@
 
     <img src="./screenshots/download_tube.png" alt="drawing" width="300"/>
 
+- Playlist 다운로드
+
+  - `https://www.youtube.com/playlist?list`로 시작하는 URL은 playlist로 인식하고 모든 영상을 다운로드 함
+  - Playlist URL은 반드시 공개된 URL이어야 함
+  - Playlist 다운로드 진행 중 멈추고 싶으면 다음 단어중 하나를 봇에게 보내면 된다(`정지, 멈춤, s, stop`)
+
 - 사용자,관리자 구분
 
   - 설치 시 `.env`에 `TELEGRAM_ADMIN_USERNAME`에 등록한 아이디가 관리자
@@ -39,6 +45,7 @@
 - 관리자 메뉴
 
   - 해당 관리자가 사용자 또는 관리자를 등록가능
+  - `ahelp`: 관리자 도움말 보기
   - `adduser`: 사용자 또는 관리자 추가
   - `upuser`: 사용자 정보 변경
   - `deluser`: 사용자 제거

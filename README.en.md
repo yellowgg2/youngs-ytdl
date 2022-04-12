@@ -20,6 +20,12 @@ I modified [ydls](https://hub.docker.com/r/mwader/ydls/dockerfile) original code
 
     <img src="./screenshots/download_tube.png" alt="drawing" width="300"/>
 
+- Download Playlist
+
+  - Bot will recognize URL as a playlist if it starts with `https://www.youtube.com/playlist?list`, then starts download all videos in the list
+  - Playlist URL MUST be public one
+  - If you would like to stop downloading Playlist while it's still downloading, then send one of these words (`정지, 멈춤, s, stop`)
+
 - User and Admin can be added separately
 
   - Modify `TELEGRAM_ADMIN_USERNAME` in`.env` to add `Admin`
@@ -38,6 +44,7 @@ I modified [ydls](https://hub.docker.com/r/mwader/ydls/dockerfile) original code
 - Admin Menu
 
   - `Admin` is the one who can manage `Users`
+  - `ahelp`: Show admin help menu
   - `adduser`: Add `User`, or `Admin`
   - `upuser`: Update `User` or `Admin` info, especially description or user type
   - `deluser`: Delete `User`

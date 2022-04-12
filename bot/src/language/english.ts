@@ -21,6 +21,7 @@ export default class EnglishBot implements ILanguageBot {
   noDefaultFileTypes = `😪 There is no default file type.`;
   thisIsNotURL = "👿 This is not URL!";
   successfullyDeleteAllTypes = `Successfully [[ DELETE ]] all file types`;
+  stopDownloadingPlaylist = "👀 Stop downloading playlist.";
 
   channelName = "Channel: ";
   uploadDate = "Upload Date: ";
@@ -52,8 +53,12 @@ export default class EnglishBot implements ILanguageBot {
   searchingCompleted(count: number): string {
     return `📃 Completely searched. (${count} items)`;
   }
-  downloadCompleted(type: string, result: string): string {
-    return `🎉 Completely downloaded [${type}]\n${result}`;
+  downloadCompleted(
+    type: string,
+    result: string,
+    remainCountStr: string = "1/1"
+  ): string {
+    return `🎉 Completely downloaded [${type}]\n\nRemain Count: ${remainCountStr}\n${result}`;
   }
 
   startDownloading(title: string, type: string): string {

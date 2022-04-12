@@ -20,6 +20,7 @@ enum CheckReplyForDelete {
 export default class BotService {
   private static instance: BotService;
   private _fileTypeMsg = LF.str.selectFileType;
+  private _stopDownloadingPlaylist = false;
 
   _addChannelNameToFileNameKey = "addChannelNameToFileName";
   _addUploadDateNameToFileNameKey = "addUploadDateNameToFileName";
@@ -102,7 +103,15 @@ export default class BotService {
     let title = playList.title;
     let songs = playList.items;
 
+    let index = 1;
+    let totalCount = songs.length;
+    this._stopDownloadingPlaylist = false;
     for (let song of songs) {
+      if (this._stopDownloadingPlaylist) {
+        this.sendMsg(chatId!, LF.str.stopDownloadingPlaylist);
+        this._stopDownloadingPlaylist = false;
+        break;
+      }
       for (let type of fileTypes) {
         this.sendMsg(chatId!, LF.str.startDownloading(song.title, type));
         let result = await ApiCaller.getInstance().getContent(
@@ -111,7 +120,14 @@ export default class BotService {
           true,
           title
         );
-        this.sendMsg(chatId!, LF.str.downloadCompleted(type, result as string));
+        this.sendMsg(
+          chatId!,
+          LF.str.downloadCompleted(
+            type,
+            result as string,
+            `${index++}/${totalCount}`
+          )
+        );
       }
     }
   }
@@ -319,6 +335,20 @@ export default class BotService {
     );
   }
 
+  private isStopDownloadingWords(text: string): boolean {
+    return (
+      text === "정지" || text === "멈춤" || text === "stop" || text === "s"
+    );
+  }
+
+  private stopDownloadingPlaylist(msg: TelegramBot.Message) {
+    if (this.isStopDownloadingWords(msg.text ?? "")) {
+      this._stopDownloadingPlaylist = true;
+      return true;
+    }
+    return false;
+  }
+
   private isPlayList(text: string): boolean {
     return text.includes("playlist?list=");
   }
@@ -362,6 +392,10 @@ export default class BotService {
   private _messageHandler = (msg: TelegramBot.Message): void => {
     const chatId = msg.chat.id;
     const username = msg.from?.username;
+
+    if (this.stopDownloadingPlaylist(msg)) {
+      return;
+    }
 
     if (
       this.checkReplyAndDeleteFile(msg) === CheckReplyForDelete.StopProcessing

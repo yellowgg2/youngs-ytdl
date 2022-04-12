@@ -7,7 +7,11 @@ export interface ILanguageBot {
   selectFileType: string;
   searchingPlayList: string;
   searchingCompleted(count: number): string;
-  downloadCompleted(type: string, result: string): string;
+  downloadCompleted(
+    type: string,
+    result: string,
+    remainCountStr?: string
+  ): string;
   startDownloading(title: string, type: string): string;
   showHelp: string;
   showAdminHelp: string;
@@ -39,6 +43,7 @@ export interface ILanguageBot {
   successfullyAddType(type: string): string;
   successfullyDelType(type: string): string;
   successfullyDeleteAllTypes: string;
+  stopDownloadingPlaylist: string;
 }
 
 export class LanguageFactory {

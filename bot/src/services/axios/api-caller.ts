@@ -124,14 +124,24 @@ export default class ApiCaller {
 
     let file = fs.createWriteStream(`${downloadChannelDir}/${buildFileName}`);
 
-    let finishPromise = new Promise((resolve, _) => {
+    let finishPromise = new Promise((resolve, reject) => {
       file.on("finish", function () {
         glog.info(
           `[Line - 77][File - api-caller.ts] ${buildFileName} completed`
         );
-        resolve(
-          `${LF.str.channelName}${channel}\n${LF.str.uploadDate}${uploadDate}\n${buildFileName}`
-        );
+        fs.stat(`${downloadChannelDir}/${buildFileName}`, (err, stats) => {
+          if (err) {
+            reject(err.message);
+          } else {
+            resolve(
+              `${LF.str.channelName}${channel}\n${
+                LF.str.uploadDate
+              }${uploadDate}\nFileSize: ${(stats.size / 1024 / 1024).toFixed(
+                1
+              )} MB\n\n${buildFileName}`
+            );
+          }
+        });
       });
     });
     let errorPromise = new Promise((_, reject) => {
