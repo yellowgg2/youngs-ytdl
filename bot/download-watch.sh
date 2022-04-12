@@ -1,5 +1,7 @@
 #!/bin/bash
 
+DOWNLOAD_PATH=synolog ds audio path
+
 while true
 do
        touch ./lastwatch
