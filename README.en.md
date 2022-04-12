@@ -75,7 +75,7 @@ I modified [ydls](https://hub.docker.com/r/mwader/ydls/dockerfile) original code
 - Clone repo recursively with `git clone --recurse-submodules https://github.com/yellowgg2/youngs-ytdl`
 - Modify `.env` file as you wish
 - If you are using `Synology` and want to make it work with `DS audio` especially
-  - You need to create a scheduler as boot script in control panel of Synology that executes `download-watch.sh` included in this repo for Synology to start indexing once download completed.
+  - You need to create a scheduler as boot script in control panel of Synology that executes `download-watch.sh` included in this repo for Synology to start indexing once download completed. (You MUST change `DOWNLOAD_PATH` in `download-watch.sh` to what `DS audio` watching)
   - You won't be able to see the file downloaded in `DS audio` if you don't do so
 - Run `docker-compose up -d --build` finally
 
