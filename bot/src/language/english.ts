@@ -22,6 +22,8 @@ export default class EnglishBot implements ILanguageBot {
   thisIsNotURL = "👿 This is not URL!";
   successfullyDeleteAllTypes = `Successfully [[ DELETE ]] all file types`;
   stopDownloadingPlaylist = "👀 Stop downloading playlist.";
+  completelyDownloadPlayList =
+    "🌈 Successfully downloaded all videos in the list";
 
   channelName = "Channel: ";
   uploadDate = "Upload Date: ";

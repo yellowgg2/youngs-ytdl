@@ -104,13 +104,13 @@ export default class BotService {
     let songs = playList.items;
 
     let index = 1;
-    let totalCount = songs.length;
+    let totalCount = songs.length * fileTypes.length;
     this._stopDownloadingPlaylist = false;
     for (let song of songs) {
       if (this._stopDownloadingPlaylist) {
         this.sendMsg(chatId!, LF.str.stopDownloadingPlaylist);
         this._stopDownloadingPlaylist = false;
-        break;
+        return;
       }
       for (let type of fileTypes) {
         this.sendMsg(chatId!, LF.str.startDownloading(song.title, type));
@@ -130,6 +130,7 @@ export default class BotService {
         );
       }
     }
+    this.sendMsg(chatId!, LF.str.completelyDownloadPlayList);
   }
 
   async downloadSingleFile(

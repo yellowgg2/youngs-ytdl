@@ -44,6 +44,7 @@ export interface ILanguageBot {
   successfullyDelType(type: string): string;
   successfullyDeleteAllTypes: string;
   stopDownloadingPlaylist: string;
+  completelyDownloadPlayList: string;
 }
 
 export class LanguageFactory {
