@@ -22,6 +22,8 @@ export default class KoreanBot implements ILanguageBot {
   thisIsNotURL = "👿 이건 URL이 아니잖아!";
   successfullyDeleteAllTypes = `성공적으로 [[ 모든 ]] 타입을 삭제했습니다.`;
   stopDownloadingPlaylist = "👀 플레이리스트 다운로드를 중지합니다.";
+  completelyDownloadPlayList =
+    "🌈 성공적으로 플레이리스트가 다운로드되었습니다";
 
   channelName = "채널명: ";
   uploadDate = "업로드 날짜: ";
