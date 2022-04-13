@@ -96,6 +96,7 @@ export default class BotService {
     fileTypes: Array<string>,
     url: string
   ) {
+    this._stopDownloadingPlaylist = false;
     this.sendMsg(chatId!, LF.str.searchingPlayList);
     let playList = await ApiCaller.getInstance().getRssContentFromPlaylist(url);
     this.sendMsg(chatId!, LF.str.searchingCompleted(playList.items.length));
@@ -105,7 +106,7 @@ export default class BotService {
 
     let index = 1;
     let totalCount = songs.length * fileTypes.length;
-    this._stopDownloadingPlaylist = false;
+
     for (let song of songs) {
       if (this._stopDownloadingPlaylist) {
         this.sendMsg(chatId!, LF.str.stopDownloadingPlaylist);
