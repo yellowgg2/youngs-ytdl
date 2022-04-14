@@ -1,96 +1,94 @@
-[English](README.en.md)
+[한글](README.ko.md)
 
 # youtube-dl download telegram bot
 
-[ydls](https://hub.docker.com/r/mwader/ydls/dockerfile)와 함께 사용할 수 있는 봇으로, Docker가 설치되는 곳이면 어디든 설치가 가능하다 (ex: 리눅스 서버, 시놀로지 나스)
+You can install this bot where `Docker` can be installed.
 
-기존에 ydls 이미지를 그대로 사용하였지만, `채널 이름`과, `업로드 날짜`를 파일이름에 추가해달라는 요청으로, 부득이 하게 ydls코드를 수정하게 됨
+This bot is working with [ydls](https://hub.docker.com/r/mwader/ydls/dockerfile).
 
-그리하여 repo에 submodule로 포함하게 됨
+I modified [ydls](https://hub.docker.com/r/mwader/ydls/dockerfile) original code to add `Channel name and Upload date` to filename, so I had to include ydls code to this repo as submodule.
 
-# 주요기능
+# Features
 
-- Youtube 다운로드
+- Download Youtube
 
-  - 지원 포맷 : `mp3, mp4, m4a, flac, ogg, wav, webm`
-  - Youtube의 url을 봇에게 보내면, 아래와 같이 포맷을 선택할 수 있다
-  - 포맷을 선택하면 다운로드를 시작
-  - 다운로드가 완료되면 완료 메세지를 보내줌
-  - `setft`로 기본 타입을 설정하면 다음부터 그 포맷으로 자동 다운로드 (여러 타입 선택 가능)
+  - Supported Formats : `mp3, mp4, m4a, flac, ogg, wav, webm`
+  - To download youtube, just send url to the bot and choose the format which you would like to download with
+  - As soon as you choose a format, it will start downloading
+  - Once downloading is completed, it will send back complete message.
+  - It will automatically download youtube without choosing a format if you set default file types with `setft` (multiple formats can be chosen)
 
     <img src="./screenshots/download_tube.png" alt="drawing" width="300"/>
 
-- Playlist 다운로드
+- Download Playlist
 
-  - `https://www.youtube.com/playlist?list`로 시작하는 URL은 playlist로 인식하고 모든 영상을 다운로드 함
-  - Playlist URL은 반드시 공개된 URL이어야 함
-  - Playlist 다운로드 진행 중 멈추고 싶으면 다음 단어중 하나를 봇에게 보내면 된다(`정지, 멈춤, s, stop`)
+  - Bot will recognize URL as a playlist if it starts with `https://www.youtube.com/playlist?list`, then starts download all videos in the list
+  - Playlist URL MUST be public one
+  - If you would like to stop downloading Playlist while it's still downloading, then send one of these words (`정지, 멈춤, s, stop`)
 
-- 사용자,관리자 구분
+- User and Admin can be added separately
 
-  - 설치 시 `.env`에 `TELEGRAM_ADMIN_USERNAME`에 등록한 아이디가 관리자
-  - 해당 관리자가 사용자 또는 관리자를 등록가능
+  - Modify `TELEGRAM_ADMIN_USERNAME` in`.env` to add `Admin`
+  - `User` can be added by `Admin`, while operating, with telegram command
 
-- 사용자 메뉴
+- User Menu
 
-  - `사용자`는 관리자가 등록한 사용자를 말함
-  - `help, allusers, setft, showft` 명령 사용가능
-  - `help`: 도움말 보기
-  - `allusers`: 등록된 사용자 보기
-  - `setft`: 기본 파일 타입 지정하기 (파일 타입이 지정되면 다운로드 파일 포맷을 물어보지 않는다. `none`을 선택하면 해제)
-  - `showft`: 내가 지정한 기본 파일 타입 보기
+  - `User` means the one who is registered by `Admin`
+  - `help`: Show help menu
+  - `allusers`: Show all users registered
+  - `setft`: Set default file types. If do so, it won't ask file type to be downloaded. (Default file types can be cleared with choosing `none`)
+  - `showft`: Show default file types that User have made with `setft`
 
     <img src="./screenshots/user_menu.png" alt="drawing" width="300"/>
 
-- 관리자 메뉴
+- Admin Menu
 
-  - 해당 관리자가 사용자 또는 관리자를 등록가능
-  - `ahelp`: 관리자 도움말 보기
-  - `adduser`: 사용자 또는 관리자 추가
-  - `upuser`: 사용자 정보 변경
-  - `deluser`: 사용자 제거
-  - `chtof`: 다운로드 파일 이름에 채널이름을 추가 (한번 더 실행하면 토글 됨, **봇을 사용하는 모든 사용자에게 적용**)
-  - `udtof`: 다운로드 파일 이름에 업로드 날짜를 추가 (한번 더 실행하면 토글 됨, **봇을 사용하는 모든 사용자에게 적용**)
+  - `Admin` is the one who can manage `Users`
+  - `ahelp`: Show admin help menu
+  - `adduser`: Add `User`, or `Admin`
+  - `upuser`: Update `User` or `Admin` info, especially description or user type
+  - `deluser`: Delete `User`
+  - `chtof`: Add `channel` to the filename that will be download (Toggled if executed the cmd again. **This will be applied to all users current and future users registered**)
+  - `udtof`: Add `Upload Date` to the filename that will be download (Toggled if executed the cmd again. **This will be applied to all users current and future users registered**)
 
     <img src="./screenshots/admin_menu.png" alt="drawing" width="300"/>
 
-- 파일 삭제
+- Delete file downloaded accidentally
 
-  - 다운로드 완료 메세지에 reply로 아래 단어 중 하나 입력하면 저장 파일을 삭제합니다
+  - To delete file from the download directory, reply to `download completed` message with one of the words below.
   - `지우기, 삭제, d, del, delete`
 
     <img src="./screenshots/delete_file.png" alt="drawing" width="300"/>
 
 # environments
 
-.env 파일의 값 설명
+`.env` variables you need to set before installing it
 
-| key                       | 설명                                                         | 예시           |
-| ------------------------- | ------------------------------------------------------------ | -------------- |
-| `PUID`                    | host UID (`id -u`로 확인)                                    | 1000           |
-| `GUID`                    | host GID (`id -g`로 확인)                                    | 1000           |
-| `TELEGRAM_BOT_API_TOKEN`  | 봇 토큰                                                      |                |
-| `TELEGRAM_ADMIN_USERNAME` | 텔레그램 아이디 - 관리자 용 (보통 설치하는 사람 아이디 입력) |                |
-| `TELEGRAM_ADMIN_DESC`     | 관리자 설명                                                  | 수퍼맨         |
-| `TELEGRAM_ADMIN_CHATID`   | 특정 명령이나 에러 발생 시 메세지를 보낼 chat id             | 11223344       |
-| `DOWNLOAD_PATH`           | host의 다운로드 위치                                         | ./bot/download |
-| `BOT_LANG`                | 언어 설정 (ko: 한국어, en: 영어)                             | ko or en       |
+| key                       | desc                                                                                      | example        |
+| ------------------------- | ----------------------------------------------------------------------------------------- | -------------- |
+| `PUID`                    | host UID (Check with `id -u`)                                                             | 1000           |
+| `GUID`                    | host GID (Check with `id -g`)                                                             | 1000           |
+| `TELEGRAM_BOT_API_TOKEN`  | Bot Api Token. This can be optained with [Bot Father](https://t.me/botfather) in Telegram |                |
+| `TELEGRAM_ADMIN_USERNAME` | Telegram Id for `Admin`.                                                                  |                |
+| `TELEGRAM_ADMIN_DESC`     | Admin User Description                                                                    | SuperMan       |
+| `TELEGRAM_ADMIN_CHATID`   | Telegram Chat id for `Admin` to receive message with once error occurs                    | 11223344       |
+| `DOWNLOAD_PATH`           | Download location in host machine                                                         | ./bot/download |
+| `BOT_LANG`                | Set language (ko: Korean, en: English)                                                    | ko or en       |
 
-# 설치
+# Installation
 
-> docker, docker-compose는 기본적으로 설치하셔야 합니다.
+> Basically you _MUST_ install docker, docker-compose.
 
-- `git clone --recurse-submodules https://github.com/yellowgg2/youngs-ytdl` 명령으로 submodule까지 clone
-- `.env` 파일의 값을 본인에 맞게 설정
-- `Synology` 사용자 이며, `DS audio`와 함께 사용하고 싶은 사람
-  - 부팅 스크립트로 repo에 첨부된 `download-watch.sh`를 실행하는 스케쥴러를 등록해야 함
-  - `download-watch.sh`의 `DOWNLOAD_PATH`값을 `DS Audio` 가 바라보는 위치로 변경
-  - 이 작업을 하지 않으면 다운로드를 완료해도 해당 파일이 `DS audio`에서 보이지 않음
-- `docker-compose up -d --build` 실행
+- Clone repo recursively with `git clone --recurse-submodules https://github.com/yellowgg2/youngs-ytdl`
+- Modify `.env` file as you wish
+- If you are using `Synology` and want to make it work with `DS audio` especially
+  - You need to create a scheduler as boot script in control panel of Synology that executes `download-watch.sh` included in this repo for Synology to start indexing once download completed. (You MUST change `DOWNLOAD_PATH` in `download-watch.sh` to what `DS audio` watching)
+  - You won't be able to see the file downloaded in `DS audio` if you don't do so
+- Run `docker-compose up -d --build` finally
 
-# 업데이트
+# Update
 
-업데이트 시에는 아래 두 명령을 차례로 실행
+Executes the below commands sequentially
 
 - git pull --recurse-submodules
 - docker-compose down && docker-compose up -d --build
