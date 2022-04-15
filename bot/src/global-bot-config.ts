@@ -16,6 +16,11 @@ if (process.env.NODE_ENV === "production") {
   botToken = process.env.BOT_API_TOKEN;
 }
 
+if (!botToken) {
+  console.log("========================= NO TOKEN");
+  process.exit(1);
+}
+
 export const botInstance = new TelegramBot(botToken!, {
   polling: true
 });

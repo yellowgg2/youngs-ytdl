@@ -105,6 +105,11 @@ export default class ApiCaller {
       res.headers["content-disposition"]
     );
 
+    let headOfFile = filename.split(`.${type}`);
+    if (headOfFile[0].length > 90) {
+      filename = headOfFile[0].substring(0, 80) + `-toolong.${type}`;
+    }
+
     let channel = decodeURI(res.headers["cc-channel"]);
     let uploadDate = res.headers["cc-uploaddate"];
     let buildFileName = this.buildFilename(channel, uploadDate) + filename;
