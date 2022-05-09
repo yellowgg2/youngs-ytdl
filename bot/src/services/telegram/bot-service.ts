@@ -357,7 +357,7 @@ export default class BotService {
 
   checkReplyAndDeleteFile(msg: TelegramBot.Message): CheckReplyForDelete {
     const chatId = msg.chat.id;
-    let channel = msg.reply_to_message?.text?.split("\n")?.[1] ?? null;
+    let channel = msg.reply_to_message?.text?.split("\n")?.[3] ?? null;
 
     // 해당 메세지를 지우겠다는 의미
     if (channel !== null && this.isDeleteWords(msg.text ?? "")) {
@@ -365,7 +365,7 @@ export default class BotService {
         LF.str.channelName,
         ""
       )}`;
-      let filename = msg.reply_to_message?.text?.split("\n")?.[3] ?? null;
+      let filename = msg.reply_to_message?.text?.split("\n")?.[7] ?? null;
       if (
         filename !== null &&
         fs.existsSync(`${downloadChannelDir}/${filename}`)
