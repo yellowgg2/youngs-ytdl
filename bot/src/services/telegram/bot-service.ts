@@ -494,10 +494,14 @@ export default class BotService {
           break;
         case /\/ff/.test(cmd[0]):
           this.authUserCommand(chatId, username, () => {
-            let linuxCmd = `find /ytdlbot/searchroot -name "*${cmd[1]}*"`;
+            let linuxCmd = `find /ytdlbot/searchroot -type f -name "*${cmd[1]}*" ! -path "*/@eaDir*"`;
 
             this.runLinuxCommand(linuxCmd, (output: string) => {
               this.sendMsg(chatId!, output);
+              output.replace(
+                "/ytdlbot/searchroot",
+                process.env.SEARCH_ROOT_PATH ?? "."
+              );
             });
             glog.info(`run find command ${linuxCmd}`);
           });
