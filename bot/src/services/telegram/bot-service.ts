@@ -497,7 +497,7 @@ export default class BotService {
             var cloneCmd = cmd.slice();
             cloneCmd.splice(0, 1);
 
-            let linuxCmd = `find /ytdlbot/searchroot -type f -name "*${cloneCmd.join(
+            let linuxCmd = `find /ytdlbot/searchroot -type f -iname "*${cloneCmd.join(
               " "
             )}*" ! -path "*/@eaDir*"`;
 
