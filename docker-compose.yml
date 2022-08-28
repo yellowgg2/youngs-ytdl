@@ -18,6 +18,7 @@ services:
       - BOT_LANG=$BOT_LANG
       - PUID=$PUID
       - PGID=$PGID
+      - SEARCH_ROOT_PATH=$SEARCH_ROOT_PATH
     volumes:
       - $DOWNLOAD_PATH:/ytdlbot/download
       - $SEARCH_ROOT_PATH:/ytdlbot/searchroot
