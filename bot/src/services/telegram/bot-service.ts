@@ -494,14 +494,24 @@ export default class BotService {
           break;
         case /\/ff/.test(cmd[0]):
           this.authUserCommand(chatId, username, () => {
-            let linuxCmd = `find /ytdlbot/searchroot -type f -name "*${cmd[1]}*" ! -path "*/@eaDir*"`;
+            var cloneCmd = cmd.slice();
+            cloneCmd.splice(0, 1);
+
+            let linuxCmd = `find /ytdlbot/searchroot -type f -name "*${cloneCmd.join(
+              " "
+            )}*" ! -path "*/@eaDir*"`;
 
             this.runLinuxCommand(linuxCmd, (output: string) => {
               let replacedPath = output.replace(
                 /\/ytdlbot\/searchroot/g,
                 process.env.SEARCH_ROOT_PATH ?? "."
               );
-              this.sendMsg(chatId!, replacedPath);
+
+              if (replacedPath === "") {
+                this.sendMsg(chatId!, "😅 검색 결과가 없습니다.");
+              } else {
+                this.sendMsg(chatId!, replacedPath);
+              }
             });
             glog.info(`run find command ${linuxCmd}`);
           });
