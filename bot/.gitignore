@@ -9,6 +9,7 @@ logs/
 *.mp3
 *.db
 .env.dev
+.env.pri
 .env
 ### Node ###
 # Logs

@@ -24,6 +24,8 @@ services:
   ytdl-service:
     container_name: ytdl-service
     image: ytdl-service
+    ports:
+      - 8080:8080
     build:
       context: ./ydls
     restart: always
