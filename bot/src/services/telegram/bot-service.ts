@@ -507,7 +507,7 @@ export default class BotService {
                 process.env.SEARCH_ROOT_PATH ?? "."
               );
 
-              replacedPath = replacedPath.replace(/\\n/g, "\n\n");
+              replacedPath = replacedPath.replace(/\n/g, "\n\n");
 
               if (replacedPath === "") {
                 this.sendMsg(chatId!, "😅 검색 결과가 없습니다.");
