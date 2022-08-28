@@ -20,6 +20,7 @@ services:
       - PGID=$PGID
     volumes:
       - $DOWNLOAD_PATH:/ytdlbot/download
+      - $SEARCH_ROOT_PATH:/ytdlbot/searchroot
       - ./bot/db:/ytdlbot/db
   ytdl-service:
     container_name: ytdl-service
