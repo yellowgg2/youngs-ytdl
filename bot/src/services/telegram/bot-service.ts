@@ -289,10 +289,11 @@ export default class BotService {
       .catch(e => glog.error(e));
   }
 
-  private async runLinuxCommand(cmd: string) {
-    let exec = require("child_process").exec;
-    const output = await exec(cmd);
-    console.log(output);
+  private async runLinuxCommand(cmd: string, callback: any) {
+    var exec = require("child_process").exec;
+    exec(cmd, function (error: any, stdout: any, stderr: any) {
+      callback(stdout);
+    });
   }
 
   private sendFileTypeButtons(
@@ -495,7 +496,10 @@ export default class BotService {
           this.authUserCommand(chatId, username, () => {
             this.sendFileTypeButtons(chatId, this._fileTypeMsg, true);
             this.runLinuxCommand(
-              `find /ytdlbot/searchroot -name "*${cmd[1]}*"`
+              `find /ytdlbot/searchroot -name "*${cmd[1]}*"`,
+              (output: string) => {
+                glog.info(output);
+              }
             );
           });
           break;
