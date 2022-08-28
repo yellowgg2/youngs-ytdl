@@ -498,7 +498,7 @@ export default class BotService {
 
             this.runLinuxCommand(linuxCmd, (output: string) => {
               let replacedPath = output.replace(
-                "/ytdlbot/searchroot",
+                /\/ytdlbot\/searchroot/g,
                 process.env.SEARCH_ROOT_PATH ?? "."
               );
               this.sendMsg(chatId!, replacedPath);
