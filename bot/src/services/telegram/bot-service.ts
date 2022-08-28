@@ -494,13 +494,12 @@ export default class BotService {
           break;
         case /\/ff/.test(cmd[0]):
           this.authUserCommand(chatId, username, () => {
-            this.sendFileTypeButtons(chatId, this._fileTypeMsg, true);
-            this.runLinuxCommand(
-              `find /ytdlbot/searchroot -name "*${cmd[1]}*"`,
-              (output: string) => {
-                glog.info(output);
-              }
-            );
+            let linuxCmd = `find /ytdlbot/searchroot -name "*${cmd[1]}*"`;
+
+            this.runLinuxCommand(linuxCmd, (output: string) => {
+              this.sendMsg(chatId!, output);
+            });
+            glog.info(`run find command ${linuxCmd}`);
           });
           break;
         case /\/showft/.test(cmd[0]):
