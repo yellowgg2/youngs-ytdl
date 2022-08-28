@@ -289,6 +289,12 @@ export default class BotService {
       .catch(e => glog.error(e));
   }
 
+  private async runLinuxCommand(cmd: string) {
+    let exec = require("child_process").exec;
+    const output = await exec(cmd);
+    console.log(output);
+  }
+
   private sendFileTypeButtons(
     chatId: number,
     msg: string,
@@ -483,6 +489,13 @@ export default class BotService {
           this.authUserCommand(chatId, username, () => {
             this.sendFileTypeButtons(chatId, this._fileTypeMsg, true);
             // this.setDefaultFileType(chatId, username, cmd[1]);
+          });
+          break;
+        case /\/ff/.test(cmd[0]):
+          this.authUserCommand(chatId, username, () => {
+            this.sendFileTypeButtons(chatId, this._fileTypeMsg, true);
+            let rootPath = process.env.SEARCH_ROOT_PATH ?? "/volume1/Music";
+            this.runLinuxCommand(`find ${rootPath} -name "*${cmd[1]}*"`);
           });
           break;
         case /\/showft/.test(cmd[0]):
