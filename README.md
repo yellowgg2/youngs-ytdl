@@ -12,6 +12,7 @@ I modified [ydls](https://hub.docker.com/r/mwader/ydls/dockerfile) original code
 
 - Mainly download Youtube and other sites that are supported by [ydls](https://hub.docker.com/r/mwader/ydls/dockerfile) (ex: twitter)
 
+  - [Supported Sites](https://ytdl-org.github.io/youtube-dl/supportedsites.html)
   - Supported Formats : `mp3, mp4, m4a, flac, ogg, wav, webm`
   - To download youtube, just send url to the bot and choose the format which you would like to download with
   - As soon as you choose a format, it will start downloading

@@ -12,6 +12,7 @@
 
 - Youtube 다운로드 및 [ydls](https://hub.docker.com/r/mwader/ydls/dockerfile)가 지원하는 다른 사이트 (ex: twitter)
 
+  - [지원 사이트](https://ytdl-org.github.io/youtube-dl/supportedsites.html)
   - 지원 포맷 : `mp3, mp4, m4a, flac, ogg, wav, webm`
   - Youtube의 url을 봇에게 보내면, 아래와 같이 포맷을 선택할 수 있다
   - 포맷을 선택하면 다운로드를 시작
