@@ -101,6 +101,8 @@ export default class ApiCaller {
     }
 
     let am = new AxiosModel();
+    const containingHostName = new URL(url);
+
     let filename = am.extractFilenameFromContentDisposition(
       res.headers["content-disposition"]
     );
@@ -111,6 +113,11 @@ export default class ApiCaller {
     }
 
     let channel = decodeURI(res.headers["cc-channel"]);
+
+    if (channel.length === 0) {
+      channel = containingHostName.hostname;
+    }
+
     let uploadDate = res.headers["cc-uploaddate"];
     let buildFileName = this.buildFilename(channel, uploadDate) + filename;
     let downloadChannelDir = isPlayList
