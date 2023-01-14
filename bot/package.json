@@ -27,7 +27,7 @@
   },
   "dependencies": {
     "axios": "^0.26.1",
-    "dotenv": "^16.0.0",
+    "custom-env": "^2.0.1",
     "node-telegram-bot-api": "^0.56.0",
     "node-telegram-keyboard-wrapper": "^3.0.0",
     "sqlite3": "^5.0.2",

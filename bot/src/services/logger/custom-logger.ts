@@ -1,9 +1,5 @@
 import winston from "winston";
 import winstonDailyRotateFile from "winston-daily-rotate-file";
-import dotenv from "dotenv";
-
-dotenv.config();
-
 const LOGGER_CATEGORY = "youngkiLogger";
 const LOG_PREFIX = "ytdl-server";
 

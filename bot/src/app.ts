@@ -1,5 +1,4 @@
-import TelegramBot from "node-telegram-bot-api";
-import { botInstance } from "./global-bot-config";
+import "./env-checker";
 import { glog } from "./services/logger/custom-logger";
 import DbHandler from "./services/sqlite/db-handler";
 import DbService from "./services/sqlite/db-service";

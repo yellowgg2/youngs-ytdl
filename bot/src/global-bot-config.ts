@@ -1,6 +1,4 @@
 import TelegramBot from "node-telegram-bot-api";
-import dotenv from "dotenv";
-dotenv.config();
 
 export const ADMIN_CHATID = process.env.ADMIN_CHATID
   ? parseInt(process.env.ADMIN_CHATID)

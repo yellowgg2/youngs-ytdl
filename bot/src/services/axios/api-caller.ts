@@ -1,12 +1,10 @@
 import axios, { AxiosInstance } from "axios";
 import fs from "fs";
-import dotenv from "dotenv";
 import xml2js from "xml2js";
 import { glog } from "../logger/custom-logger";
 import BotService from "../telegram/bot-service";
 import AxiosModel from "../../models/axios-model";
 import { LF } from "../../language/language-factory";
-dotenv.config();
 
 export interface IPlayList {
   title: string;
@@ -21,10 +19,7 @@ export interface IPlayListItem {
 export default class ApiCaller {
   private _axiosCaller: AxiosInstance;
   private static instance: ApiCaller;
-  private _baseUrl =
-    process.env.NODE_ENV === "production"
-      ? process.env.YTDL_URL
-      : "http://192.168.129.72:8080";
+  private _baseUrl = process.env.YTDL_URL!;
 
   private constructor() {
     this._axiosCaller = axios.create({ baseURL: this._baseUrl });
@@ -86,6 +81,7 @@ export default class ApiCaller {
   }
 
   async getContent(
+    userId: string,
     url: string,
     type: string = "mp3",
     isPlayList = false,
@@ -121,17 +117,17 @@ export default class ApiCaller {
     let uploadDate = res.headers["cc-uploaddate"];
     let buildFileName = this.buildFilename(channel, uploadDate) + filename;
     let downloadChannelDir = isPlayList
-      ? `./download/${playListTitle}/${channel}`
-      : `./download/${channel}`;
+      ? `./download/${userId}/${playListTitle}/${channel}`
+      : `./download/${userId}/${channel}`;
 
-    let playListDir = `./download/${playListTitle}`;
+    let playListDir = `./download/${userId}/${playListTitle}`;
 
     if (isPlayList && !fs.existsSync(playListDir)) {
-      fs.mkdirSync(playListDir);
+      fs.mkdirSync(playListDir, { recursive: true });
     }
 
     if (!fs.existsSync(downloadChannelDir)) {
-      fs.mkdirSync(downloadChannelDir);
+      fs.mkdirSync(downloadChannelDir, { recursive: true });
     }
 
     let file = fs.createWriteStream(`${downloadChannelDir}/${buildFileName}`);

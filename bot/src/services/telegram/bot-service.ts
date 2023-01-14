@@ -59,6 +59,7 @@ export default class BotService {
     botInstance.on("polling_error", err => console.log(err));
     botInstance.on("callback_query", async msg => {
       let chatId = msg.message?.chat.id;
+      let userId = msg.from?.username ?? "unknown";
       let text = msg.message?.text;
       let username = msg.from.username;
       let fileType = msg.data;
@@ -80,10 +81,10 @@ export default class BotService {
         } else {
           // 다운로드 url
           if (this.isPlayList(text!) === true) {
-            await this.downloadPlayList(chatId!, [fileType!], text!);
+            await this.downloadPlayList(userId, chatId!, [fileType!], text!);
             return;
           }
-          await this.downloadSingleFile(chatId!, [fileType!], text!);
+          await this.downloadSingleFile(userId, chatId!, [fileType!], text!);
         }
       } catch (error) {
         this.sendMsg(chatId!, `👿 ${error}`);
@@ -92,6 +93,7 @@ export default class BotService {
   }
 
   async downloadPlayList(
+    userId: string,
     chatId: number,
     fileTypes: Array<string>,
     url: string
@@ -116,6 +118,7 @@ export default class BotService {
       for (let type of fileTypes) {
         this.sendMsg(chatId!, LF.str.startDownloading(song.title, type));
         let result = await ApiCaller.getInstance().getContent(
+          userId,
           song.link[0],
           type,
           true,
@@ -135,13 +138,14 @@ export default class BotService {
   }
 
   async downloadSingleFile(
+    userId: string,
     chatId: number,
     fileTypes: Array<string>,
     url: string
   ) {
     for (let type of fileTypes) {
       this.sendMsg(chatId!, LF.str.startDownloading("", type));
-      let result = await ApiCaller.getInstance().getContent(url, type);
+      let result = await ApiCaller.getInstance().getContent(userId, url, type);
       this.sendMsg(chatId!, LF.str.downloadCompleted(type, result as string));
     }
   }
@@ -368,10 +372,9 @@ export default class BotService {
 
     // 해당 메세지를 지우겠다는 의미
     if (channel !== null && this.isDeleteWords(msg.text ?? "")) {
-      let downloadChannelDir = `./download/${channel.replace(
-        LF.str.channelName,
-        ""
-      )}`;
+      let downloadChannelDir = `./download/${
+        msg.from?.username ?? "unknown"
+      }/${channel.replace(LF.str.channelName, "")}`;
       let filename = msg.reply_to_message?.text?.split("\n")?.[7] ?? null;
       if (
         filename !== null &&
@@ -400,7 +403,7 @@ export default class BotService {
 
   private _messageHandler = (msg: TelegramBot.Message): void => {
     const chatId = msg.chat.id;
-    const username = msg.from?.username;
+    const username = msg.from?.username ?? "unknown";
 
     if (this.stopDownloadingPlaylist(msg)) {
       return;
@@ -546,6 +549,7 @@ export default class BotService {
             DbHandler.getAllFileTypeForUser(username!).then(async results => {
               if (results.length > 0) {
                 this.downloadPlayList(
+                  username,
                   chatId,
                   results.map(v => v.filetype),
                   msg.text!
@@ -562,6 +566,7 @@ export default class BotService {
           DbHandler.getAllFileTypeForUser(username!).then(async results => {
             if (results.length > 0) {
               this.downloadSingleFile(
+                username,
                 chatId,
                 results.map(v => v.filetype),
                 msg.text!
