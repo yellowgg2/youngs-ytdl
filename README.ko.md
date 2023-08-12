@@ -94,4 +94,5 @@
 업데이트 시에는 아래 두 명령을 차례로 실행
 
 - git pull --recurse-submodules
+- git submodule update --remote
 - docker-compose down && docker-compose up -d --build
