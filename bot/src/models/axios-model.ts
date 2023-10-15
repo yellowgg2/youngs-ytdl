@@ -6,10 +6,11 @@ export default class AxiosModel {
     let filename = "";
 
     if (matches != null && matches[1]) {
-      filename = matches[1].replace(/['"]/g, "");
-      filename = decodeURI(filename);
+      filename = decodeURI(matches[1]);
+      filename = filename.replace(/['"]/g, "");
       filename = filename.replace(/[\|]/g, "");
       filename = filename.replace(/%[0-9A-Z][0-9A-Z]/g, "");
+      console.log(filename);
     }
     return filename;
   }
