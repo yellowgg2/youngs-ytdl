@@ -11,7 +11,8 @@ export default class KoreanBot implements ILanguageBot {
   successfullyDeleted = "🌈 성공적으로 [[ 삭제 ]] 되었습니다";
   allowedUsers = "⚠ 허용된 사용자 목록";
   welcomeMessage = "환영합니다. 처음 오신분은 관리자에게 문의하세요.";
-  noAuthUserWarnMsg = "🌼 권한이 없습니다.\n관리자에게 문의하세요.";
+  noAuthUserWarnMsg =
+    "🌼 설치 가이드:\nhttps://github.com/yellowgg2/youngs-ytdl\n\n권한이 없습니다.\n관리자에게 문의하세요.";
   notAdminWarn = "👿 당신은 관리자가 아닙니다";
   notACmd = "😥 해당 명령은 없어요!";
   addChannelToFilename = `😀 파일 이름에 채널이름이 들어갑니다.`;

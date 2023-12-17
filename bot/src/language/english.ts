@@ -11,7 +11,8 @@ export default class EnglishBot implements ILanguageBot {
   successfullyDeleted = "🌈 Successfully [[ Deleted ]]";
   allowedUsers = "⚠ Allowed Users List";
   welcomeMessage = "Welcome to Ytdl bot. Ask Admin to grant access";
-  noAuthUserWarnMsg = "🌼 You don't have permission.\nAsk Admin.";
+  noAuthUserWarnMsg =
+    "🌼 Install Guide:\nhttps://github.com/yellowgg2/youngs-ytdl\n\nYou don't have permission to use this bot directly.\nAsk Admin.";
   notAdminWarn = "👿 You are not Admin";
   notACmd = "😥 There is no cmd like this.";
   addChannelToFilename = `😀 Filename will include channel name from now on.`;
