@@ -265,13 +265,21 @@ export default class BotService {
   ) {
     if (!username) {
       this.sendMsg(chatId, LF.str.noAuthUserWarnMsg);
+      this.sendMsgToAdmin(
+        `==> This msg was sent to them\n${LF.str.noAuthUserWarnMsg}`
+      );
       return;
     }
     this.checkAuthUser(username)
       .then(() => {
         callback();
       })
-      .catch(e => this.sendMsg(chatId, LF.str.noAuthUserWarnMsg));
+      .catch(e => {
+        this.sendMsg(chatId, LF.str.noAuthUserWarnMsg);
+        this.sendMsgToAdmin(
+          `==> This msg was sent to them\n${LF.str.noAuthUserWarnMsg}`
+        );
+      });
   }
 
   adminCommand(
