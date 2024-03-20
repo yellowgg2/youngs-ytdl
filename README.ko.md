@@ -66,16 +66,16 @@
 
 .env 파일의 값 설명
 
-| key                       | 설명                                                         | 예시           |
-| ------------------------- | ------------------------------------------------------------ | -------------- |
-| `PUID`                    | host UID (`id -u`로 확인)                                    | 1000           |
-| `GUID`                    | host GID (`id -g`로 확인)                                    | 1000           |
-| `TELEGRAM_BOT_API_TOKEN`  | 봇 토큰                                                      |                |
-| `TELEGRAM_ADMIN_USERNAME` | 텔레그램 아이디 - 관리자 용 (보통 설치하는 사람 아이디 입력) |                |
-| `TELEGRAM_ADMIN_DESC`     | 관리자 설명                                                  | 수퍼맨         |
-| `TELEGRAM_ADMIN_CHATID`   | 특정 명령이나 에러 발생 시 메세지를 보낼 chat id             | 11223344       |
-| `DOWNLOAD_PATH`           | host의 다운로드 위치                                         | ./bot/download |
-| `BOT_LANG`                | 언어 설정 (ko: 한국어, en: 영어)                             | ko or en       |
+| key                       | 설명                                                                              | 예시           |
+| ------------------------- | --------------------------------------------------------------------------------- | -------------- |
+| `PUID`                    | host UID (`id -u`로 확인)                                                         | 1000           |
+| `GUID`                    | host GID (`id -g`로 확인)                                                         | 1000           |
+| `TELEGRAM_BOT_API_TOKEN`  | 봇 토큰                                                                           |                |
+| `TELEGRAM_ADMIN_USERNAME` | 텔레그램 아이디. 텔레그램 아이디가 `@superman`이라면 `@`빼고, `superman`으로 입력 |                |
+| `TELEGRAM_ADMIN_DESC`     | 관리자 설명                                                                       | 수퍼맨         |
+| `TELEGRAM_ADMIN_CHATID`   | 특정 명령이나 에러 발생 시 메세지를 보낼 chat id                                  | 11223344       |
+| `DOWNLOAD_PATH`           | host의 다운로드 위치                                                              | ./bot/download |
+| `BOT_LANG`                | 언어 설정 (ko: 한국어, en: 영어)                                                  | ko or en       |
 
 # 설치
 

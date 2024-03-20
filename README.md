@@ -65,16 +65,16 @@ I modified [ydls](https://hub.docker.com/r/mwader/ydls/dockerfile) original code
 
 `.env` variables you need to set before installing it
 
-| key                       | desc                                                                                      | example        |
-| ------------------------- | ----------------------------------------------------------------------------------------- | -------------- |
-| `PUID`                    | host UID (Check with `id -u`)                                                             | 1000           |
-| `GUID`                    | host GID (Check with `id -g`)                                                             | 1000           |
-| `TELEGRAM_BOT_API_TOKEN`  | Bot Api Token. This can be optained with [Bot Father](https://t.me/botfather) in Telegram |                |
-| `TELEGRAM_ADMIN_USERNAME` | Telegram Id for `Admin`.                                                                  |                |
-| `TELEGRAM_ADMIN_DESC`     | Admin User Description                                                                    | SuperMan       |
-| `TELEGRAM_ADMIN_CHATID`   | Telegram Chat id for `Admin` to receive message with once error occurs                    | 11223344       |
-| `DOWNLOAD_PATH`           | Download location in host machine                                                         | ./bot/download |
-| `BOT_LANG`                | Set language (ko: Korean, en: English)                                                    | ko or en       |
+| key                       | desc                                                                                        | example        |
+| ------------------------- | ------------------------------------------------------------------------------------------- | -------------- |
+| `PUID`                    | host UID (Check with `id -u`)                                                               | 1000           |
+| `GUID`                    | host GID (Check with `id -g`)                                                               | 1000           |
+| `TELEGRAM_BOT_API_TOKEN`  | Bot Api Token. This can be optained with [Bot Father](https://t.me/botfather) in Telegram   |                |
+| `TELEGRAM_ADMIN_USERNAME` | Telegram Id for `Admin`.If your telegram ID is `@superman`, then put `superman` without `@` | superman       |
+| `TELEGRAM_ADMIN_DESC`     | Admin User Description                                                                      | SuperMan       |
+| `TELEGRAM_ADMIN_CHATID`   | Telegram Chat id for `Admin` to receive message with once error occurs                      | 11223344       |
+| `DOWNLOAD_PATH`           | Download location in host machine                                                           | ./bot/download |
+| `BOT_LANG`                | Set language (ko: Korean, en: English)                                                      | ko or en       |
 
 # Installation
 
