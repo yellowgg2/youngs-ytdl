@@ -31,3 +31,9 @@ services:
     build:
       context: ./ydls
     restart: always
+  yt-dlp-service:
+    image: ghcr.io/jauderho/yt-dlp:latest
+    container_name: ytdl-dlp-service
+    restart: always
+    volumes:
+      - $DOWNLOAD_PATH:/downloads:rw
