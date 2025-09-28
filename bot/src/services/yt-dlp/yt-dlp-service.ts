@@ -65,18 +65,28 @@ export default class YtDlpService {
       const outputTemplate = `${finalOutputPath}/${filenameTemplate}`;
 
       // yt-dlp 명령어 구성
-      const cmd = [
+      let cmd = [
         "yt-dlp",
         "-f", this.getFormatSelector(format),
         "-o", `"${outputTemplate}"`,
         "--add-metadata",
         "--embed-thumbnail",
-        `"${url}"`
-      ].join(" ");
+        "--print", '"after_move:%(filepath)s"'  // 다운로드 완료 후 실제 파일 경로 출력
+      ];
 
-      glog.info(`[YtDlpService] Executing command: ${cmd}`);
+      // 오디오 전용 포맷인 경우 추가 옵션
+      if (this.isAudioFormat(format)) {
+        cmd.push("--extract-audio");
+        cmd.push("--audio-format", format);
+      }
 
-      const { stdout, stderr } = await execAsync(cmd);
+      cmd.push(`"${url}"`);
+
+      const cmdString = cmd.join(" ");
+
+      glog.info(`[YtDlpService] Executing command: ${cmdString}`);
+
+      const { stdout, stderr } = await execAsync(cmdString);
 
       if (stderr) {
         glog.warn(`[YtDlpService] stderr: ${stderr}`);
@@ -84,8 +94,11 @@ export default class YtDlpService {
 
       glog.info(`[YtDlpService] Download completed for ${url}`);
 
+      // 다운로드된 파일명 추출 (새로운 방법)
+      const downloadedFile = await this.extractFilenameFromOutput(stdout, finalOutputPath);
+
       // 다운로드된 파일 정보 추출
-      const fileInfo = await this.extractFileInfo(stdout, url, finalOutputPath);
+      const fileInfo = await this.extractFileInfo(url, finalOutputPath, downloadedFile);
 
       return fileInfo;
 
@@ -145,30 +158,76 @@ export default class YtDlpService {
 
   private getFormatSelector(format: string): string {
     const formatMap: { [key: string]: string } = {
-      "mp3": "bestaudio[ext=m4a]/bestaudio/best",
+      "mp3": "bestaudio/best",          // 오디오 추출 후 mp3로 변환
       "mp4": "best[ext=mp4]/best",
-      "m4a": "bestaudio[ext=m4a]/bestaudio",
-      "flac": "bestaudio[acodec=flac]/bestaudio",
-      "ogg": "bestaudio[acodec=vorbis]/bestaudio",
-      "wav": "bestaudio[acodec=pcm]/bestaudio",
+      "m4a": "bestaudio/best",          // 오디오 추출 후 m4a로 변환
+      "flac": "bestaudio/best",         // 오디오 추출 후 flac으로 변환
+      "ogg": "bestaudio/best",          // 오디오 추출 후 ogg로 변환
+      "wav": "bestaudio/best",          // 오디오 추출 후 wav로 변환
       "webm": "best[ext=webm]/best"
     };
 
     return formatMap[format] || "best";
   }
 
-  private extractFilenameFromOutput(output: string): string {
-    // yt-dlp 출력에서 다운로드된 파일명 추출
-    // 예: "[download] 100% of filename.mp3"
-    const match = output.match(/\[download\].*?(\S+\.\w+)$/m);
-    return match ? match[1] : "";
+  private isAudioFormat(format: string): boolean {
+    const audioFormats = ["mp3", "m4a", "flac", "ogg", "wav"];
+    return audioFormats.includes(format);
   }
 
-  private async extractFileInfo(output: string, url: string, outputPath: string): Promise<string> {
-    try {
-      // 다운로드된 파일명 추출
-      const downloadedFile = this.extractFilenameFromOutput(output);
+  private async extractFilenameFromOutput(output: string, outputPath: string): Promise<string> {
+    // 방법 1: --print 옵션으로 출력된 파일 경로 확인
+    const lines = output.split('\n');
+    for (const line of lines) {
+      const trimmedLine = line.trim();
+      // 절대 경로이고 출력 디렉토리 내의 파일인지 확인
+      if (trimmedLine.startsWith('/') && trimmedLine.includes(outputPath)) {
+        const filename = trimmedLine.split('/').pop();
+        if (filename) {
+          glog.info(`[YtDlpService] Found filename from --print output: ${filename}`);
+          return filename;
+        }
+      }
+    }
 
+    // 방법 2: 기존 패턴 매칭 시도
+    const patterns = [
+      /\[download\].*?100%.*?of\s+(.+?)(?:\s+in|\s+at|\s*$)/m,  // [download] 100% of filename
+      /\[Merger\].*?Merging formats into\s+"([^"]+)"/m,         // [Merger] 출력
+      /\[ExtractAudio\].*?Destination:\s*(.+)/m,               // [ExtractAudio] 출력
+      /^\s*(.+\.\w+)\s*$/m                                      // 단순 파일명
+    ];
+
+    for (const pattern of patterns) {
+      const match = output.match(pattern);
+      if (match && match[1]) {
+        const filename = match[1].trim().split('/').pop() || match[1].trim();
+        glog.info(`[YtDlpService] Found filename from pattern matching: ${filename}`);
+        return filename;
+      }
+    }
+
+    // 방법 3: 출력 디렉토리에서 가장 최근 파일 찾기
+    try {
+      const findCmd = `find "${outputPath}" -type f -printf '%T@ %p\n' | sort -n | tail -1 | cut -d' ' -f2-`;
+      const { stdout: latestFile } = await execAsync(findCmd);
+      if (latestFile.trim()) {
+        const filename = latestFile.trim().split('/').pop();
+        if (filename) {
+          glog.info(`[YtDlpService] Found filename from latest file search: ${filename}`);
+          return filename;
+        }
+      }
+    } catch (error) {
+      glog.warn(`[YtDlpService] Failed to find latest file: ${error}`);
+    }
+
+    glog.warn(`[YtDlpService] Could not extract filename from any method. Output: ${output.substring(0, 200)}...`);
+    return "";
+  }
+
+  private async extractFileInfo(url: string, outputPath: string, downloadedFile: string): Promise<string> {
+    try {
       if (!downloadedFile) {
         return "Download completed successfully";
       }
@@ -181,16 +240,45 @@ export default class YtDlpService {
       const { stdout: metadataOutput } = await execAsync(metadataCmd);
       const [uploader, uploadDate, title] = metadataOutput.trim().split('|');
 
-      // 파일 크기 가져오기
-      const filePath = `${outputPath}/${downloadedFile}`;
-      const fileSizeCmd = `ls -lh "${filePath}" | awk '{print $5}'`;
+      // 실제 파일 경로에서 파일 찾기 (glob 패턴 사용)
+      const baseName = downloadedFile.replace(/\.[^/.]+$/, ""); // 확장자 제거
+      const sanitizedBaseName = this.sanitizeFilename(baseName);
 
+      // 가능한 파일 경로들
+      const possiblePaths = [
+        `${outputPath}/${downloadedFile}`,
+        `${outputPath}/${sanitizedBaseName}.*`,
+        `${outputPath}/*${title}*.*`
+      ];
+
+      let actualFilePath = "";
+      let actualFileName = downloadedFile;
+
+      // 실제 파일 찾기
+      for (const path of possiblePaths) {
+        try {
+          const findCmd = `find "${outputPath}" -name "${path.split('/').pop()}" -type f | head -1`;
+          const { stdout: foundFile } = await execAsync(findCmd);
+          if (foundFile.trim()) {
+            actualFilePath = foundFile.trim();
+            actualFileName = actualFilePath.split('/').pop() || downloadedFile;
+            break;
+          }
+        } catch (findError) {
+          // 계속 다른 패턴 시도
+        }
+      }
+
+      // 파일 크기 가져오기
       let fileSize = "Unknown";
-      try {
-        const { stdout: sizeOutput } = await execAsync(fileSizeCmd);
-        fileSize = sizeOutput.trim();
-      } catch (sizeError) {
-        glog.warn(`[YtDlpService] Failed to get file size: ${sizeError}`);
+      if (actualFilePath) {
+        try {
+          const fileSizeCmd = `du -h "${actualFilePath}" | cut -f1`;
+          const { stdout: sizeOutput } = await execAsync(fileSizeCmd);
+          fileSize = sizeOutput.trim();
+        } catch (sizeError) {
+          glog.warn(`[YtDlpService] Failed to get file size: ${sizeError}`);
+        }
       }
 
       // 업로드 날짜 포맷팅 (YYYYMMDD)
@@ -200,8 +288,9 @@ export default class YtDlpService {
       const result = `채널명: ${uploader || "Unknown"}
 업로드 날짜: ${formattedDate}
 FileSize: ${fileSize}
+OutputPath: ${outputPath}
 
-${downloadedFile}`;
+${actualFileName}`;
 
       return result;
 
