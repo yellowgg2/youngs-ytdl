@@ -11,11 +11,10 @@ COPY --from=yt-dlp-stage /usr/local/bin/yt-dlp /usr/local/bin/yt-dlp
 # Use default sources for Node.js base image (bookworm)
 RUN echo $TZ > /etc/timezone && \
     apt-get update && \
-    apt-get install -y tzdata python3 python3-pip build-essential make g++ ffmpeg && \
+    apt-get install -y tzdata python3 python3-pip python3-mutagen build-essential make g++ ffmpeg && \
     rm /etc/localtime && \
     ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && \
     dpkg-reconfigure -f noninteractive tzdata && \
-    python3 -m pip install mutagen && \
     apt-get clean
 
 # Make yt-dlp executable
