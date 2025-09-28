@@ -1,4 +1,4 @@
-FROM node:14
+FROM node:22.13.0
 ENV TZ 'Asia/Seoul'
 
 RUN echo "deb http://archive.debian.org/debian stretch main contrib non-free" > /etc/apt/sources.list

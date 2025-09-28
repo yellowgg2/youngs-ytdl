@@ -395,7 +395,7 @@ export default class BotService {
           }
           botInstance.deleteMessage(
             chatId,
-            `${msg.reply_to_message?.message_id}`
+            msg.reply_to_message?.message_id as number
           );
           this.sendMsg(chatId!, LF.str.successfullyDeleted);
         });

@@ -29,7 +29,7 @@ class Logger {
       winston.format.json(),
       winston.format.printf(info => {
         return `${new Date(
-          info.timestamp
+          info.timestamp as string | number | Date
         ).toLocaleString()} [${this.upperLogLevel(info.level)}] ${
           info.message
         }`;
