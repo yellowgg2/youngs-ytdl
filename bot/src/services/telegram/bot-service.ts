@@ -6,6 +6,7 @@ import {
 } from "node-telegram-keyboard-wrapper";
 import { ADMIN_CHATID, botInstance } from "../../global-bot-config";
 import ApiCaller from "../axios/api-caller";
+import YtDlpService from "../yt-dlp/yt-dlp-service";
 import { glog } from "../logger/custom-logger";
 import DbHandler, { IYtdlGlobalOptionToObj } from "../sqlite/db-handler";
 import fs from "fs";
@@ -100,7 +101,7 @@ export default class BotService {
   ) {
     this._stopDownloadingPlaylist = false;
     this.sendMsg(chatId!, LF.str.searchingPlayList);
-    let playList = await ApiCaller.getInstance().getRssContentFromPlaylist(url);
+    let playList = await YtDlpService.getInstance().getRssContentFromPlaylist(url);
     this.sendMsg(chatId!, LF.str.searchingCompleted(playList.items.length));
 
     let title = playList.title;
@@ -117,7 +118,7 @@ export default class BotService {
       }
       for (let type of fileTypes) {
         this.sendMsg(chatId!, LF.str.startDownloading(song.title, type));
-        let result = await ApiCaller.getInstance().getContent(
+        let result = await YtDlpService.getInstance().getContent(
           userId,
           song.link[0],
           type,
@@ -145,7 +146,7 @@ export default class BotService {
   ) {
     for (let type of fileTypes) {
       this.sendMsg(chatId!, LF.str.startDownloading("", type));
-      let result = await ApiCaller.getInstance().getContent(userId, url, type);
+      let result = await YtDlpService.getInstance().getContent(userId, url, type);
       this.sendMsg(chatId!, LF.str.downloadCompleted(type, result as string));
     }
   }
