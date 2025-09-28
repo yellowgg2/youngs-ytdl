@@ -30,13 +30,20 @@ export default class YtDlpService {
   async getContent(
     userId: string,
     url: string,
-    format: string,
+    format: string = "mp3",
     isPlaylist: boolean = false,
     playlistTitle: string = ""
   ): Promise<string> {
     try {
+      glog.info(`[YtDlpService] getContent called with parameters: userId=${userId}, url=${url}, format=${format}, isPlaylist=${isPlaylist}, playlistTitle=${playlistTitle}`);
+
       const botService = BotService.getInstance();
-      const outputDir = `/ytdlbot/download/${userId}`;
+
+      // 채널 정보 가져오기
+      const channelInfo = await this.getChannelInfo(url);
+      const channelName = channelInfo ? this.sanitizeFilename(channelInfo) : "unknown_channel";
+
+      const outputDir = `/ytdlbot/download/${userId}/${channelName}`;
 
       // 채널명과 업로드 날짜를 파일명에 포함할지 결정
       let filenameTemplate = "%(title)s.%(ext)s";
@@ -64,7 +71,6 @@ export default class YtDlpService {
         "-o", `"${outputTemplate}"`,
         "--add-metadata",
         "--embed-thumbnail",
-        "--write-info-json",
         `"${url}"`
       ].join(" ");
 
@@ -78,10 +84,10 @@ export default class YtDlpService {
 
       glog.info(`[YtDlpService] Download completed for ${url}`);
 
-      // 다운로드된 파일명 추출 (실제 구현에서는 더 정교하게 파싱 필요)
-      const downloadedFile = this.extractFilenameFromOutput(stdout);
+      // 다운로드된 파일 정보 추출
+      const fileInfo = await this.extractFileInfo(stdout, url, finalOutputPath);
 
-      return downloadedFile || "Download completed successfully";
+      return fileInfo;
 
     } catch (error: any) {
       glog.error(`[YtDlpService] Error downloading ${url}: ${error.message}`);
@@ -156,5 +162,79 @@ export default class YtDlpService {
     // 예: "[download] 100% of filename.mp3"
     const match = output.match(/\[download\].*?(\S+\.\w+)$/m);
     return match ? match[1] : "";
+  }
+
+  private async extractFileInfo(output: string, url: string, outputPath: string): Promise<string> {
+    try {
+      // 다운로드된 파일명 추출
+      const downloadedFile = this.extractFilenameFromOutput(output);
+
+      if (!downloadedFile) {
+        return "Download completed successfully";
+      }
+
+      // 비디오 메타데이터 가져오기
+      const metadataCmd = `yt-dlp --print "%(uploader)s|%(upload_date)s|%(title)s" --no-download "${url}"`;
+
+      glog.info(`[YtDlpService] Getting metadata: ${metadataCmd}`);
+
+      const { stdout: metadataOutput } = await execAsync(metadataCmd);
+      const [uploader, uploadDate, title] = metadataOutput.trim().split('|');
+
+      // 파일 크기 가져오기
+      const filePath = `${outputPath}/${downloadedFile}`;
+      const fileSizeCmd = `ls -lh "${filePath}" | awk '{print $5}'`;
+
+      let fileSize = "Unknown";
+      try {
+        const { stdout: sizeOutput } = await execAsync(fileSizeCmd);
+        fileSize = sizeOutput.trim();
+      } catch (sizeError) {
+        glog.warn(`[YtDlpService] Failed to get file size: ${sizeError}`);
+      }
+
+      // 업로드 날짜 포맷팅 (YYYYMMDD)
+      const formattedDate = uploadDate || "Unknown";
+
+      // 결과 문자열 구성
+      const result = `채널명: ${uploader || "Unknown"}
+업로드 날짜: ${formattedDate}
+FileSize: ${fileSize}
+
+${downloadedFile}`;
+
+      return result;
+
+    } catch (error: any) {
+      glog.error(`[YtDlpService] Error extracting file info: ${error.message}`);
+      return "Download completed successfully";
+    }
+  }
+
+  private async getChannelInfo(url: string): Promise<string | null> {
+    try {
+      // yt-dlp를 사용해 채널명 가져오기
+      const cmd = `yt-dlp --print "%(uploader)s" --no-download "${url}"`;
+
+      glog.info(`[YtDlpService] Getting channel info: ${cmd}`);
+
+      const { stdout } = await execAsync(cmd);
+      const channelName = stdout.trim();
+
+      return channelName || null;
+    } catch (error: any) {
+      glog.warn(`[YtDlpService] Failed to get channel info: ${error.message}`);
+      return null;
+    }
+  }
+
+  private sanitizeFilename(filename: string): string {
+    // 파일/폴더명에 사용할 수 없는 문자들을 제거하거나 대체
+    return filename
+      .replace(/[/\\?%*:|"<>]/g, "_")  // 특수문자를 언더스코어로 대체
+      .replace(/\s+/g, "_")            // 공백을 언더스코어로 대체
+      .replace(/_{2,}/g, "_")          // 연속된 언더스코어를 하나로 합침
+      .replace(/^_|_$/g, "")           // 앞뒤 언더스코어 제거
+      .toLowerCase();                  // 소문자로 변환
   }
 }
