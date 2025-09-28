@@ -11,12 +11,10 @@ COPY --from=yt-dlp-stage /usr/bin/python3* /usr/bin/
 COPY --from=yt-dlp-stage /usr/lib/python3* /usr/lib/
 COPY --from=yt-dlp-stage /usr/local/lib/python3* /usr/local/lib/
 
-RUN echo "deb http://archive.debian.org/debian stretch main contrib non-free" > /etc/apt/sources.list
-#RUN sed -i s/deb.debian.org/archive.debian.org/g /etc/apt/sources.list
-#RUN sed -i s/security.debian.org/archive.debian.org/g /etc/apt/sources.list
+# Use default sources for Node.js base image (bookworm)
 RUN echo $TZ > /etc/timezone && \
     apt-get update && \
-    apt-get install -y tzdata python3 python3-minimal libpython3-stdlib && \
+    apt-get install -y tzdata python3 python3-dev python3-pip build-essential make g++ && \
     rm /etc/localtime && \
     ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && \
     dpkg-reconfigure -f noninteractive tzdata && \
