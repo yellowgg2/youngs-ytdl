@@ -77,7 +77,7 @@ export default class YtDlpService {
       // 오디오 전용 포맷인 경우 추가 옵션
       if (this.isAudioFormat(format)) {
         cmd.push("--extract-audio");
-        cmd.push("--audio-format", format);
+        cmd.push("--audio-format", this.getAudioFormat(format));
       }
 
       cmd.push(`"${url}"`);
@@ -97,8 +97,9 @@ export default class YtDlpService {
       // 다운로드된 파일명 추출 (새로운 방법)
       const downloadedFile = await this.extractFilenameFromOutput(stdout, finalOutputPath);
 
-      // 다운로드된 파일 정보 추출
-      const fileInfo = await this.extractFileInfo(url, finalOutputPath, downloadedFile);
+      // 다운로드된 파일 정보 추출 (--print 옵션으로 얻은 전체 경로 전달)
+      const fullFilePath = this.extractFullPathFromOutput(stdout, finalOutputPath);
+      const fileInfo = await this.extractFileInfo(url, finalOutputPath, downloadedFile, fullFilePath);
 
       return fileInfo;
 
@@ -162,7 +163,7 @@ export default class YtDlpService {
       "mp4": "best[ext=mp4]/best",
       "m4a": "bestaudio/best",          // 오디오 추출 후 m4a로 변환
       "flac": "bestaudio/best",         // 오디오 추출 후 flac으로 변환
-      "ogg": "bestaudio/best",          // 오디오 추출 후 ogg로 변환
+      "ogg": "bestaudio/best",          // 오디오 추출 후 vorbis로 변환 (ogg 컨테이너)
       "wav": "bestaudio/best",          // 오디오 추출 후 wav로 변환
       "webm": "best[ext=webm]/best"
     };
@@ -173,6 +174,33 @@ export default class YtDlpService {
   private isAudioFormat(format: string): boolean {
     const audioFormats = ["mp3", "m4a", "flac", "ogg", "wav"];
     return audioFormats.includes(format);
+  }
+
+  private getAudioFormat(format: string): string {
+    // yt-dlp --audio-format에서 지원하는 포맷으로 매핑
+    const audioFormatMap: { [key: string]: string } = {
+      "mp3": "mp3",
+      "m4a": "m4a",
+      "flac": "flac",
+      "ogg": "vorbis",    // ogg -> vorbis 변환
+      "wav": "wav"
+    };
+
+    return audioFormatMap[format] || format;
+  }
+
+  private extractFullPathFromOutput(output: string, outputPath: string): string {
+    // --print 옵션으로 출력된 전체 파일 경로 찾기
+    const lines = output.split('\n');
+    for (const line of lines) {
+      const trimmedLine = line.trim();
+      // 절대 경로이고 출력 디렉토리 내의 파일인지 확인
+      if (trimmedLine.startsWith('/') && trimmedLine.includes(outputPath)) {
+        glog.info(`[YtDlpService] Found full file path: ${trimmedLine}`);
+        return trimmedLine;
+      }
+    }
+    return "";
   }
 
   private async extractFilenameFromOutput(output: string, outputPath: string): Promise<string> {
@@ -226,7 +254,7 @@ export default class YtDlpService {
     return "";
   }
 
-  private async extractFileInfo(url: string, outputPath: string, downloadedFile: string): Promise<string> {
+  private async extractFileInfo(url: string, outputPath: string, downloadedFile: string, fullFilePath?: string): Promise<string> {
     try {
       if (!downloadedFile) {
         return "Download completed successfully";
@@ -240,44 +268,28 @@ export default class YtDlpService {
       const { stdout: metadataOutput } = await execAsync(metadataCmd);
       const [uploader, uploadDate, title] = metadataOutput.trim().split('|');
 
-      // 실제 파일 경로에서 파일 찾기 (glob 패턴 사용)
-      const baseName = downloadedFile.replace(/\.[^/.]+$/, ""); // 확장자 제거
-      const sanitizedBaseName = this.sanitizeFilename(baseName);
 
-      // 가능한 파일 경로들
-      const possiblePaths = [
-        `${outputPath}/${downloadedFile}`,
-        `${outputPath}/${sanitizedBaseName}.*`,
-        `${outputPath}/*${title}*.*`
-      ];
-
-      let actualFilePath = "";
+      // 파일 크기 가져오기 (우선 fullFilePath 사용, 없으면 기존 방식)
+      let fileSize = "Unknown";
+      let actualFilePath = fullFilePath || "";
       let actualFileName = downloadedFile;
 
-      // 실제 파일 찾기
-      for (const path of possiblePaths) {
-        try {
-          const findCmd = `find "${outputPath}" -name "${path.split('/').pop()}" -type f | head -1`;
-          const { stdout: foundFile } = await execAsync(findCmd);
-          if (foundFile.trim()) {
-            actualFilePath = foundFile.trim();
-            actualFileName = actualFilePath.split('/').pop() || downloadedFile;
-            break;
-          }
-        } catch (findError) {
-          // 계속 다른 패턴 시도
-        }
-      }
+      if (fullFilePath) {
+        // --print 옵션으로 얻은 전체 경로 사용
+        actualFilePath = fullFilePath;
+        actualFileName = fullFilePath.split('/').pop() || downloadedFile;
+        glog.info(`[YtDlpService] Using full file path from --print: ${actualFilePath}`);
+      } 
 
       // 파일 크기 가져오기
-      let fileSize = "Unknown";
       if (actualFilePath) {
         try {
           const fileSizeCmd = `du -h "${actualFilePath}" | cut -f1`;
           const { stdout: sizeOutput } = await execAsync(fileSizeCmd);
           fileSize = sizeOutput.trim();
+          glog.info(`[YtDlpService] File size: ${fileSize} for ${actualFilePath}`);
         } catch (sizeError) {
-          glog.warn(`[YtDlpService] Failed to get file size: ${sizeError}`);
+          glog.warn(`[YtDlpService] Failed to get file size for ${actualFilePath}: ${sizeError}`);
         }
       }
 
