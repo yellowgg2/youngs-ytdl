@@ -136,7 +136,6 @@ yt-dlp의 최신 버전으로 업데이트 (YouTube 변경사항 대응):
 ```bash
 # yt-dlp 이미지만 업데이트
 docker compose pull yt-dlp-service
-docker compose up -d yt-dlp-service
 ```
 
 ### 봇 코드 업데이트

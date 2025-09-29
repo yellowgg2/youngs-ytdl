@@ -136,7 +136,6 @@ Update to the latest yt-dlp version (for YouTube compatibility):
 ```bash
 # Update only yt-dlp image
 docker compose pull yt-dlp-service
-docker compose up -d yt-dlp-service
 ```
 
 ### Update Bot Code
