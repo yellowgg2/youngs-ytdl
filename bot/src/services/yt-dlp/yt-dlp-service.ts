@@ -87,7 +87,7 @@ export default class YtDlpService {
   }
 
   private async fetchMetadata(url: string): Promise<VideoMetadata> {
-    const metadataCmd = `yt-dlp --print "%(channel)s|%(uploader)s|%(upload_date)s|%(title)s" --no-download "${url}"`;
+    const metadataCmd = `yt-dlp --print "%(channel)s|%(uploader)s|%(upload_date)s|%(title)s" --no-download --no-playlist "${url}"`;
 
     glog.info(`[YtDlpService] Getting metadata: ${metadataCmd}`);
 
@@ -153,7 +153,8 @@ export default class YtDlpService {
     const cmd = [
       "yt-dlp",
       "-f", this.getFormatSelector(format),
-      "-o", `"${fullFilePath}"`
+      "-o", `"${fullFilePath}"`,
+      "--no-playlist"
     ];
 
     // 임베딩을 지원하는 포맷인 경우에만 메타데이터 및 썸네일 옵션 추가
