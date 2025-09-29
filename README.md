@@ -1,95 +1,162 @@
 [한글](README.ko.md)
 
-# youtube-dl download telegram bot
+# YouTube Download Telegram Bot
 
-You can install this bot where `Docker` can be installed.
+A powerful Telegram bot for downloading videos and audio from YouTube and 1000+ other media sites. Works anywhere Docker can be installed (Linux servers, Synology NAS, etc.).
 
-This bot is working with [ydls](https://hub.docker.com/r/mwader/ydls/dockerfile).
+## Table of Contents
+- [Features](#features)
+- [Installation](#installation)
+- [Environment Configuration](#environment-configuration)
+- [Usage](#usage)
+- [Update](#update)
 
-I modified [ydls](https://hub.docker.com/r/mwader/ydls/dockerfile) original code to add `Channel name and Upload date` to filename, so I had to include ydls code to this repo as submodule.
+## Overview
 
-# Features
+This bot uses the powerful media downloader [yt-dlp](https://github.com/yt-dlp/yt-dlp) internally. It automatically adds `channel name` and `upload date` to downloaded filenames for better organization.
 
-- Mainly download Youtube and other sites that are supported by [ydls](https://hub.docker.com/r/mwader/ydls/dockerfile) (ex: twitter)
+## Features
 
-  - [Supported Sites](https://ytdl-org.github.io/youtube-dl/supportedsites.html)
-  - Supported Formats : `mp3, mp4, m4a, flac, ogg, wav, webm`
-  - To download youtube, just send url to the bot and choose the format which you would like to download with
-  - As soon as you choose a format, it will start downloading
-  - Once downloading is completed, it will send back complete message.
-  - It will automatically download youtube without choosing a format if you set default file types with `setft` (multiple formats can be chosen)
+### Media Download
+- Supports YouTube and 1000+ other sites (Twitter, Instagram, TikTok, etc.)
+  - [Complete list of supported sites](https://github.com/yt-dlp/yt-dlp/blob/master/supportedsites.md)
+- **Supported Formats**: `mp3`, `mp4`, `m4a`, `flac`, `ogg`, `wav`, `webm`
+- Send URL to bot and choose format from interactive buttons
+- Instant download starts after format selection
+- Set default formats with `setft` command for automatic downloads (multiple formats supported)
 
-    <img src="./screenshots/download_tube.png" alt="drawing" width="300"/>
+  <img src="./screenshots/download_tube.png" alt="drawing" width="300"/>
 
-- Download Playlist
+### Playlist Download
 
-  - Bot will recognize URL as a playlist if it starts with `https://www.youtube.com/playlist?list`, then starts download all videos in the list
-  - Playlist URL MUST be public one
-  - If you would like to stop downloading Playlist while it's still downloading, then send one of these words (`정지, 멈춤, s, stop`)
+- Automatically detects URLs starting with `https://www.youtube.com/playlist?list`
+- Downloads all videos in the playlist sequentially
+- **Note**: Playlist must be public
+- Stop download anytime: send `정지`, `멈춤`, `s`, or `stop`
 
-- User and Admin can be added separately
+### User Management System
 
-  - Modify `TELEGRAM_ADMIN_USERNAME` in`.env` to add `Admin`
-  - `User` can be added by `Admin`, while operating, with telegram command
+- Initial admin is set via `TELEGRAM_ADMIN_USERNAME` in `.env` file
+- Admins can register regular users or additional admins
 
-- User Menu
+### User Commands
 
-  - `User` means the one who is registered by `Admin`
-  - `help`: Show help menu
-  - `allusers`: Show all users registered
-  - `setft`: Set default file types. If do so, it won't ask file type to be downloaded. (Default file types can be cleared with choosing `none`)
-  - `showft`: Show default file types that User have made with `setft`
+| Command | Description |
+|---------|-------------|
+| `/help` | Show help menu |
+| `/allusers` | List all registered users |
+| `/setft` | Set default download formats (choose `none` to clear) |
+| `/showft` | Show current default formats |
+| `/ff [search]` | Search downloaded files |
 
-    <img src="./screenshots/user_menu.png" alt="drawing" width="300"/>
+  <img src="./screenshots/user_menu.png" alt="drawing" width="300"/>
 
-- Admin Menu
+### Admin Commands
 
-  - `Admin` is the one who can manage `Users`
-  - `ahelp`: Show admin help menu
-  - `adduser`: Add `User`, or `Admin`
-  - `upuser`: Update `User` or `Admin` info, especially description or user type
-  - `deluser`: Delete `User`
-  - `chtof`: Add `channel` to the filename that will be download (Toggled if executed the cmd again. **This will be applied to all users current and future users registered**)
-  - `udtof`: Add `Upload Date` to the filename that will be download (Toggled if executed the cmd again. **This will be applied to all users current and future users registered**)
+| Command | Description |
+|---------|-------------|
+| `/ahelp` | Show admin help menu |
+| `/adduser [ID] [Name] [Type]` | Add user/admin |
+| `/upuser [ID] [Name] [Type]` | Update user info |
+| `/deluser [ID]` | Delete user |
+| `/chtof` | Toggle channel name in filename (**applies to all users**) |
+| `/udtof` | Toggle upload date in filename (**applies to all users**) |
 
-    <img src="./screenshots/admin_menu.png" alt="drawing" width="300"/>
+  <img src="./screenshots/admin_menu.png" alt="drawing" width="300"/>
 
-- Delete file downloaded accidentally
+### File Deletion Feature
 
-  - To delete file from the download directory, reply to `download completed` message with one of the words below.
-  - `지우기, 삭제, d, del, delete`
+Reply to any `download completed` message with one of these words to delete the file:
+- `지우기`, `삭제`, `d`, `del`, `delete`
 
-    <img src="./screenshots/delete_file.png" alt="drawing" width="300"/>
+  <img src="./screenshots/delete_file.png" alt="drawing" width="300"/>
 
-# environments
+## Environment Configuration
 
-`.env` variables you need to set before installing it
+`.env` file settings
 
-| key                       | desc                                                                                        | example        |
-| ------------------------- | ------------------------------------------------------------------------------------------- | -------------- |
-| `PUID`                    | host UID (Check with `id -u`)                                                               | 1000           |
-| `GUID`                    | host GID (Check with `id -g`)                                                               | 1000           |
-| `TELEGRAM_BOT_API_TOKEN`  | Bot Api Token. This can be optained with [Bot Father](https://t.me/botfather) in Telegram   |                |
-| `TELEGRAM_ADMIN_USERNAME` | Telegram Id for `Admin`.If your telegram ID is `@superman`, then put `superman` without `@` | superman       |
-| `TELEGRAM_ADMIN_DESC`     | Admin User Description                                                                      | SuperMan       |
-| `TELEGRAM_ADMIN_CHATID`   | Telegram Chat id for `Admin` to receive message with once error occurs                      | 11223344       |
-| `DOWNLOAD_PATH`           | Download location in host machine                                                           | ./bot/download |
-| `BOT_LANG`                | Set language (ko: Korean, en: English)                                                      | ko or en       |
+| Variable | Description | Example |
+|----------|-------------|----------|
+| `PUID` | Host user ID (check with `id -u`) | `1000` |
+| `PGID` | Host group ID (check with `id -g`) | `1000` |
+| `TELEGRAM_BOT_API_TOKEN` | Bot token from [BotFather](https://t.me/botfather) | - |
+| `TELEGRAM_ADMIN_USERNAME` | Admin Telegram ID (without `@`)<br>Example: `@superman` → `superman` | `superman` |
+| `TELEGRAM_ADMIN_DESC` | Admin description | `SuperMan` |
+| `TELEGRAM_ADMIN_CHATID` | Chat ID for error notifications | `11223344` |
+| `DOWNLOAD_PATH` | Download location (host path) | `./bot/download` |
+| `SEARCH_ROOT_PATH` | File search path (optional) | `/music` |
+| `BOT_LANG` | Language (`ko`: Korean, `en`: English) | `ko` |
 
-# Installation
+## Installation
 
-> Basically you _MUST_ install docker, docker-compose.
+### Prerequisites
+- Docker
+- Docker Compose
 
-- Clone repo recursively with `git clone --recurse-submodules https://github.com/yellowgg2/youngs-ytdl`
-- Modify `.env` file as you wish
-- If you are using `Synology` and want to make it work with `DS audio` especially
-  - You need to create a scheduler as boot script in control panel of Synology that executes `download-watch.sh` included in this repo for Synology to start indexing once download completed. (You MUST change `DOWNLOAD_PATH` in `download-watch.sh` to what `DS audio` watching)
-  - You won't be able to see the file downloaded in `DS audio` if you don't do so
-- Run `docker-compose up -d --build` finally
+### Installation Steps
 
-# Update
+1. **Clone Repository**
+   ```bash
+   git clone https://github.com/yellowgg2/youngs-ytdl
+   cd youngs-ytdl
+   ```
 
-Executes the below commands sequentially
+2. **Configure Environment**
+   ```bash
+   cp .env.sample .env
+   # Edit .env file with your settings
+   ```
 
-- git pull --recurse-submodules
-- docker-compose down && docker-compose up -d --build
+3. **Start the Bot**
+   ```bash
+   docker compose up -d --build
+   ```
+
+### Additional Setup for Synology Users
+
+To integrate with DS Audio:
+1. Create a scheduled task in Control Panel (triggered at startup)
+2. Add the `download-watch.sh` script to the task
+3. Modify `DOWNLOAD_PATH` in the script to match DS Audio's watch folder
+   ```bash
+   DOWNLOAD_PATH="/music"  # Path monitored by DS Audio
+   ```
+
+## Usage
+
+1. Search for your bot in Telegram and start it
+2. Send a YouTube URL to the bot
+3. Choose desired format (or use pre-configured defaults)
+4. Wait for download completion
+
+## Update
+
+### Update yt-dlp Engine
+Update to the latest yt-dlp version (for YouTube compatibility):
+```bash
+# Update only yt-dlp image
+docker compose pull yt-dlp-service
+docker compose up -d yt-dlp-service
+```
+
+### Update Bot Code
+Update to the latest bot code from repository:
+```bash
+# Pull latest code
+git pull
+
+# Rebuild and restart services
+docker compose down
+docker compose up -d --build
+```
+
+### Full System Update
+Update everything to the latest versions:
+```bash
+git pull
+docker compose pull
+docker compose down
+docker compose up -d --build
+```
+
+> **Tip**: If YouTube downloads start failing, updating yt-dlp usually fixes the issue.

@@ -1,98 +1,162 @@
 [English](README.md)
 
-# youtube-dl download telegram bot
+# YouTube 다운로드 텔레그램 봇
 
-[ydls](https://hub.docker.com/r/mwader/ydls/dockerfile)와 함께 사용할 수 있는 봇으로, Docker가 설치되는 곳이면 어디든 설치가 가능하다 (ex: 리눅스 서버, 시놀로지 나스)
+YouTube 및 다양한 미디어 사이트에서 영상/음악을 다운로드할 수 있는 텔레그램 봇입니다. Docker가 설치 가능한 모든 환경에서 사용할 수 있습니다. (리눅스 서버, 시놀로지 NAS 등)
 
-기존에 ydls 이미지를 그대로 사용하였지만, `채널 이름`과, `업로드 날짜`를 파일이름에 추가해달라는 요청으로, 부득이 하게 ydls코드를 수정하게 됨
+## 목차
+- [주요 기능](#주요기능)
+- [설치](#설치)
+- [환경 설정](#environments)
+- [사용법](#사용법)
+- [업데이트](#업데이트)
 
-그리하여 repo에 submodule로 포함하게 됨
+## 개요
 
-# 주요기능
+이 봇은 강력한 미디어 다운로더인 [yt-dlp](https://github.com/yt-dlp/yt-dlp)를 내장하여 사용합니다. 파일명에 `채널 이름`과 `업로드 날짜`를 자동으로 추가하는 기능을 지원합니다.
 
-- Youtube 다운로드 및 [ydls](https://hub.docker.com/r/mwader/ydls/dockerfile)가 지원하는 다른 사이트 (ex: twitter)
+## 주요기능
 
-  - [지원 사이트](https://ytdl-org.github.io/youtube-dl/supportedsites.html)
-  - 지원 포맷 : `mp3, mp4, m4a, flac, ogg, wav, webm`
-  - Youtube의 url을 봇에게 보내면, 아래와 같이 포맷을 선택할 수 있다
-  - 포맷을 선택하면 다운로드를 시작
-  - 다운로드가 완료되면 완료 메세지를 보내줌
-  - `setft`로 기본 타입을 설정하면 다음부터 그 포맷으로 자동 다운로드 (여러 타입 선택 가능)
+### 미디어 다운로드
+- YouTube 및 1000개 이상의 사이트 지원 (Twitter, Instagram, TikTok 등)
+  - [지원 사이트 전체 목록](https://github.com/yt-dlp/yt-dlp/blob/master/supportedsites.md)
+- **지원 포맷**: `mp3`, `mp4`, `m4a`, `flac`, `ogg`, `wav`, `webm`
+- URL을 봇에게 전송하면 포맷 선택 버튼이 표시됩니다
+- 선택한 포맷으로 즉시 다운로드가 시작됩니다
+- `setft` 명령으로 기본 포맷을 설정하면 자동 다운로드 (여러 포맷 동시 선택 가능)
 
-    <img src="./screenshots/download_tube.png" alt="drawing" width="300"/>
+  <img src="./screenshots/download_tube.png" alt="drawing" width="300"/>
 
-- Playlist 다운로드
+### 플레이리스트 다운로드
 
-  - `https://www.youtube.com/playlist?list`로 시작하는 URL은 playlist로 인식하고 모든 영상을 다운로드 함
-  - Playlist URL은 반드시 공개된 URL이어야 함
-  - Playlist 다운로드 진행 중 멈추고 싶으면 다음 단어중 하나를 봇에게 보내면 된다(`정지, 멈춤, s, stop`)
+- `https://www.youtube.com/playlist?list`로 시작하는 URL 자동 인식
+- 플레이리스트의 모든 영상을 순차적으로 다운로드
+- **주의**: 플레이리스트는 반드시 공개 상태여야 함
+- 다운로드 중단: `정지`, `멈춤`, `s`, `stop` 중 하나를 입력
 
-- 사용자,관리자 구분
+### 사용자 관리 시스템
 
-  - 설치 시 `.env`에 `TELEGRAM_ADMIN_USERNAME`에 등록한 아이디가 관리자
-  - 해당 관리자가 사용자 또는 관리자를 등록가능
+- `.env` 파일의 `TELEGRAM_ADMIN_USERNAME`에 설정한 사용자가 최초 관리자
+- 관리자가 일반 사용자 또는 추가 관리자를 등록 가능
 
-- 사용자 메뉴
+### 사용자 명령어
 
-  - `사용자`는 관리자가 등록한 사용자를 말함
-  - `help, allusers, setft, showft` 명령 사용가능
-  - `help`: 도움말 보기
-  - `allusers`: 등록된 사용자 보기
-  - `setft`: 기본 파일 타입 지정하기 (파일 타입이 지정되면 다운로드 파일 포맷을 물어보지 않는다. `none`을 선택하면 해제)
-  - `showft`: 내가 지정한 기본 파일 타입 보기
+| 명령어 | 설명 |
+|--------|------|
+| `/help` | 도움말 표시 |
+| `/allusers` | 등록된 모든 사용자 목록 확인 |
+| `/setft` | 기본 다운로드 포맷 설정 (`none` 선택 시 해제) |
+| `/showft` | 설정된 기본 포맷 확인 |
+| `/ff [검색어]` | 다운로드된 파일 검색 |
 
-    <img src="./screenshots/user_menu.png" alt="drawing" width="300"/>
+  <img src="./screenshots/user_menu.png" alt="drawing" width="300"/>
 
-- 관리자 메뉴
+### 관리자 명령어
 
-  - 해당 관리자가 사용자 또는 관리자를 등록가능
-  - `ahelp`: 관리자 도움말 보기
-  - `adduser`: 사용자 또는 관리자 추가
-  - `upuser`: 사용자 정보 변경
-  - `deluser`: 사용자 제거
-  - `chtof`: 다운로드 파일 이름에 채널이름을 추가 (한번 더 실행하면 토글 됨, **봇을 사용하는 모든 사용자에게 적용**)
-  - `udtof`: 다운로드 파일 이름에 업로드 날짜를 추가 (한번 더 실행하면 토글 됨, **봇을 사용하는 모든 사용자에게 적용**)
+| 명령어 | 설명 |
+|--------|------|
+| `/ahelp` | 관리자 도움말 표시 |
+| `/adduser [ID] [이름] [타입]` | 사용자/관리자 추가 |
+| `/upuser [ID] [이름] [타입]` | 사용자 정보 수정 |
+| `/deluser [ID]` | 사용자 삭제 |
+| `/chtof` | 파일명에 채널 이름 추가 (토글, **전체 사용자 적용**) |
+| `/udtof` | 파일명에 업로드 날짜 추가 (토글, **전체 사용자 적용**) |
 
-    <img src="./screenshots/admin_menu.png" alt="drawing" width="300"/>
+  <img src="./screenshots/admin_menu.png" alt="drawing" width="300"/>
 
-- 파일 삭제
+### 파일 삭제 기능
 
-  - 다운로드 완료 메세지에 reply로 아래 단어 중 하나 입력하면 저장 파일을 삭제합니다
-  - `지우기, 삭제, d, del, delete`
+다운로드 완료 메시지에 답장(Reply)으로 다음 중 하나를 입력하면 파일이 삭제됩니다:
+- `지우기`, `삭제`, `d`, `del`, `delete`
 
-    <img src="./screenshots/delete_file.png" alt="drawing" width="300"/>
+  <img src="./screenshots/delete_file.png" alt="drawing" width="300"/>
 
-# environments
+## environments
 
-.env 파일의 값 설명
+`.env` 파일 설정값
 
-| key                       | 설명                                                                              | 예시           |
-| ------------------------- | --------------------------------------------------------------------------------- | -------------- |
-| `PUID`                    | host UID (`id -u`로 확인)                                                         | 1000           |
-| `GUID`                    | host GID (`id -g`로 확인)                                                         | 1000           |
-| `TELEGRAM_BOT_API_TOKEN`  | 봇 토큰                                                                           |                |
-| `TELEGRAM_ADMIN_USERNAME` | 텔레그램 아이디. 텔레그램 아이디가 `@superman`이라면 `@`빼고, `superman`으로 입력 |                |
-| `TELEGRAM_ADMIN_DESC`     | 관리자 설명                                                                       | 수퍼맨         |
-| `TELEGRAM_ADMIN_CHATID`   | 특정 명령이나 에러 발생 시 메세지를 보낼 chat id                                  | 11223344       |
-| `DOWNLOAD_PATH`           | host의 다운로드 위치                                                              | ./bot/download |
-| `BOT_LANG`                | 언어 설정 (ko: 한국어, en: 영어)                                                  | ko or en       |
+| 변수명 | 설명 | 예시 |
+|--------|------|------|
+| `PUID` | 호스트 사용자 ID (`id -u` 명령으로 확인) | `1000` |
+| `PGID` | 호스트 그룹 ID (`id -g` 명령으로 확인) | `1000` |
+| `TELEGRAM_BOT_API_TOKEN` | BotFather에서 발급받은 봇 토큰 | - |
+| `TELEGRAM_ADMIN_USERNAME` | 관리자 텔레그램 ID (`@` 제외)<br>예: `@superman` → `superman` | `superman` |
+| `TELEGRAM_ADMIN_DESC` | 관리자 설명 | `수퍼맨` |
+| `TELEGRAM_ADMIN_CHATID` | 오류 알림을 받을 채팅 ID | `11223344` |
+| `DOWNLOAD_PATH` | 다운로드 경로 (호스트) | `./bot/download` |
+| `SEARCH_ROOT_PATH` | 파일 검색 경로 (선택) | `/music` |
+| `BOT_LANG` | 언어 설정 (`ko`: 한국어, `en`: 영어) | `ko` |
 
-# 설치
+## 설치
 
-> docker, docker-compose는 기본적으로 설치하셔야 합니다.
+### 필수 요구사항
+- Docker
+- Docker Compose
 
-- `git clone --recurse-submodules https://github.com/yellowgg2/youngs-ytdl` 명령으로 submodule까지 clone
-- `.env` 파일의 값을 본인에 맞게 설정
-- `Synology` 사용자 이며, `DS audio`와 함께 사용하고 싶은 사람
-  - 부팅 스크립트로 repo에 첨부된 `download-watch.sh`를 실행하는 스케쥴러를 등록해야 함
-  - `download-watch.sh`의 `DOWNLOAD_PATH`값을 `DS Audio` 가 바라보는 위치로 변경
-  - 이 작업을 하지 않으면 다운로드를 완료해도 해당 파일이 `DS audio`에서 보이지 않음
-- `docker-compose up -d --build` 실행
+### 설치 과정
 
-# 업데이트
+1. **저장소 복제**
+   ```bash
+   git clone https://github.com/yellowgg2/youngs-ytdl
+   cd youngs-ytdl
+   ```
 
-업데이트 시에는 아래 두 명령을 차례로 실행
+2. **환경 설정**
+   ```bash
+   cp .env.sample .env
+   # .env 파일을 편집하여 필요한 값 설정
+   ```
 
-- git pull --recurse-submodules
-- git submodule update --remote
-- docker-compose down && docker-compose up -d --build
+3. **봇 실행**
+   ```bash
+   docker compose up -d --build
+   ```
+
+### Synology NAS 사용자를 위한 추가 설정
+
+DS Audio와 연동하려면:
+1. 제어판에서 작업 스케줄러 생성 (부팅 시 실행)
+2. `download-watch.sh` 스크립트 등록
+3. 스크립트 내 `DOWNLOAD_PATH`를 DS Audio 감시 폴더로 변경
+   ```bash
+   DOWNLOAD_PATH="/music"  # DS Audio가 감시하는 경로
+   ```
+
+## 사용법
+
+1. 텔레그램에서 봇 검색 및 시작
+2. YouTube URL을 봇에게 전송
+3. 원하는 포맷 선택 (또는 기본 포맷으로 자동 다운로드)
+4. 다운로드 완료 대기
+
+## 업데이트
+
+### yt-dlp 엔진 업데이트
+yt-dlp의 최신 버전으로 업데이트 (YouTube 변경사항 대응):
+```bash
+# yt-dlp 이미지만 업데이트
+docker compose pull yt-dlp-service
+docker compose up -d yt-dlp-service
+```
+
+### 봇 코드 업데이트
+저장소의 최신 코드로 업데이트:
+```bash
+# 최신 코드 가져오기
+git pull
+
+# 서비스 재빌드 및 재시작
+docker compose down
+docker compose up -d --build
+```
+
+### 전체 시스템 업데이트
+모든 구성 요소를 최신 버전으로 업데이트:
+```bash
+git pull
+docker compose pull
+docker compose down
+docker compose up -d --build
+```
+
+> **팁**: YouTube 다운로드가 실패하는 경우, 대부분 yt-dlp 업데이트로 해결됩니다.

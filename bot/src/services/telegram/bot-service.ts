@@ -65,6 +65,9 @@ export default class BotService {
       let username = msg.from.username;
       let fileType = msg.data;
 
+      // Telegram에 callback query를 받았음을 알림
+      await botInstance.answerCallbackQuery(msg.id, { text: "처리 중..." });
+
       try {
         if (text === this._fileTypeMsg) {
           // 파일타입 선택 버튼

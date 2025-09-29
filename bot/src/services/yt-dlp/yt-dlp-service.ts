@@ -153,11 +153,16 @@ export default class YtDlpService {
     const cmd = [
       "yt-dlp",
       "-f", this.getFormatSelector(format),
-      "-o", `"${fullFilePath}"`,
-      "--add-metadata",
-      "--embed-thumbnail",
-      "--print", '"after_move:%(filepath)s"'
+      "-o", `"${fullFilePath}"`
     ];
+
+    // 임베딩을 지원하는 포맷인 경우에만 메타데이터 및 썸네일 옵션 추가
+    if (this.supportsEmbedding(format)) {
+      cmd.push("--add-metadata");
+      cmd.push("--embed-thumbnail");
+    }
+
+    cmd.push("--print", '"after_move:%(filepath)s"');
 
     // 오디오 전용 포맷인 경우 추가 옵션
     if (this.isAudioFormat(format)) {
@@ -260,6 +265,12 @@ export default class YtDlpService {
     };
 
     return audioFormatMap[format] || format;
+  }
+
+  private supportsEmbedding(format: string): boolean {
+    // yt-dlp에서 썸네일 및 메타데이터 임베딩을 지원하는 포맷
+    const supportedFormats = ["mp3", "flac", "m4a", "ogg", "mp4", "mkv", "webm"];
+    return supportedFormats.includes(format);
   }
 
   private async extractFileInfo(outputPath: string, downloadedFile: string, fullFilePath: string, uploader: string, uploadDate: string): Promise<string> {
