@@ -115,7 +115,7 @@ export default class YtDlpService {
       const actualFilePath = fullFilePath;
 
       // 파일 정보 추출 (직접 구성한 값 전달)
-      const fileInfo = await this.extractFileInfo(url, finalOutputPath, downloadedFile, actualFilePath);
+      const fileInfo = await this.extractFileInfo(finalOutputPath, downloadedFile, actualFilePath, channel || uploader, uploadDate);
 
       return fileInfo;
 
@@ -205,20 +205,11 @@ export default class YtDlpService {
     return audioFormatMap[format] || format;
   }
 
-  private async extractFileInfo(url: string, outputPath: string, downloadedFile: string, fullFilePath: string): Promise<string> {
+  private async extractFileInfo(outputPath: string, downloadedFile: string, fullFilePath: string, uploader: string, uploadDate: string): Promise<string> {
     try {
       if (!downloadedFile || !fullFilePath) {
         return "Download completed successfully";
       }
-
-      // 메타데이터는 이미 getContent에서 가져왔으므로 다시 가져올 필요 없음
-      // 하지만 결과 포맷팅을 위해 다시 가져오기 (나중에 최적화 가능)
-      const metadataCmd = `yt-dlp --print "%(uploader)s|%(upload_date)s" --no-download "${url}"`;
-
-      glog.info(`[YtDlpService] Getting additional metadata for result: ${metadataCmd}`);
-
-      const { stdout: metadataOutput } = await execAsync(metadataCmd);
-      const [uploader, uploadDate] = metadataOutput.trim().split('|');
 
       // 파일 크기 가져오기
       let fileSize = "Unknown";
