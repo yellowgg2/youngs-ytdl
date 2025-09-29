@@ -15,6 +15,20 @@ interface IPlayList {
   items: IPlayListItem[];
 }
 
+interface VideoMetadata {
+  channel: string;
+  uploader: string;
+  uploadDate: string;
+  title: string;
+}
+
+interface DownloadPaths {
+  outputDir: string;
+  finalOutputPath: string;
+  fullFilePath: string;
+  fullFilename: string;
+}
+
 export default class YtDlpService {
   private static instance: YtDlpService;
 
@@ -37,85 +51,32 @@ export default class YtDlpService {
     try {
       glog.info(`[YtDlpService] getContent called with parameters: userId=${userId}, url=${url}, format=${format}, isPlaylist=${isPlaylist}, playlistTitle=${playlistTitle}`);
 
-      const botService = BotService.getInstance();
+      // 1. 메타데이터 가져오기
+      const metadata = await this.fetchMetadata(url);
 
-      // 1. 다운로드 전에 메타데이터 먼저 가져오기
-      const metadataCmd = `yt-dlp --print "%(channel)s|%(uploader)s|%(upload_date)s|%(title)s" --no-download "${url}"`;
+      // 2. 다운로드 경로 구성
+      const paths = await this.generateDownloadPaths(
+        userId,
+        metadata,
+        format,
+        isPlaylist,
+        playlistTitle
+      );
 
-      glog.info(`[YtDlpService] Getting metadata: ${metadataCmd}`);
+      glog.info(`[YtDlpService] Output will be saved to: ${paths.fullFilePath}`);
 
-      const { stdout: metadataOutput } = await execAsync(metadataCmd);
-      const [channel, uploader, uploadDate, title] = metadataOutput.trim().split('|');
+      // 3. yt-dlp 명령어 구성 및 실행
+      const cmdString = this.buildYtDlpCommand(url, format, paths.fullFilePath);
+      await this.executeDownload(cmdString, url);
 
-      // 2. channel과 title을 sanitize
-      const sanitizedChannel = this.sanitizeFilename(channel || uploader || "unknown_channel");
-      const sanitizedTitle = this.sanitizeFilename(title || "unknown_title");
-
-      glog.info(`[YtDlpService] Metadata - Channel: ${sanitizedChannel}, Title: ${sanitizedTitle}, Upload Date: ${uploadDate}`);
-
-      // 3. 파일명 구성
-      let filename = sanitizedTitle;
-
-      if (botService.globalOptions.addChannelNameToFileName === "on") {
-        filename = `${sanitizedChannel}_${filename}`;
-      }
-
-      if (botService.globalOptions.addUploadDateNameToFileName === "on" && uploadDate) {
-        filename = `${uploadDate}_${filename}`;
-      }
-
-      // 확장자 결정
-      const extension = this.isAudioFormat(format) ? this.getAudioFormat(format) : format;
-      const fullFilename = `${filename}.${extension}`;
-
-      // 출력 디렉토리 설정
-      const outputDir = `/ytdlbot/download/${userId}/${sanitizedChannel}`;
-      let finalOutputPath = outputDir;
-      if (isPlaylist && playlistTitle) {
-        finalOutputPath = `${outputDir}/${playlistTitle.replace(/[/\\?%*:|"<>]/g, "_")}`;
-      }
-
-      // 전체 파일 경로
-      const fullFilePath = `${finalOutputPath}/${fullFilename}`;
-
-      glog.info(`[YtDlpService] Output will be saved to: ${fullFilePath}`);
-
-      // yt-dlp 명령어 구성
-      let cmd = [
-        "yt-dlp",
-        "-f", this.getFormatSelector(format),
-        "-o", `"${fullFilePath}"`,  // 직접 구성한 전체 경로 사용
-        "--add-metadata",
-        "--embed-thumbnail",
-        "--print", '"after_move:%(filepath)s"'  // 로그용으로 유지
-      ];
-
-      // 오디오 전용 포맷인 경우 추가 옵션
-      if (this.isAudioFormat(format)) {
-        cmd.push("--extract-audio");
-        cmd.push("--audio-format", this.getAudioFormat(format));
-      }
-
-      cmd.push(`"${url}"`);
-
-      const cmdString = cmd.join(" ");
-
-      glog.info(`[YtDlpService] Executing command: ${cmdString}`);
-
-      const { stdout, stderr } = await execAsync(cmdString);
-
-      if (stderr) {
-        glog.warn(`[YtDlpService] stderr: ${stderr}`);
-      }
-
-      glog.info(`[YtDlpService] Download completed for ${url}`);
-
-      // 이미 알고 있는 파일 정보 사용
-      const downloadedFile = fullFilename;
-      const actualFilePath = fullFilePath;
-
-      // 파일 정보 추출 (직접 구성한 값 전달)
-      const fileInfo = await this.extractFileInfo(finalOutputPath, downloadedFile, actualFilePath, channel || uploader, uploadDate);
+      // 4. 파일 정보 추출
+      const fileInfo = await this.extractFileInfo(
+        paths.finalOutputPath,
+        paths.fullFilename,
+        paths.fullFilePath,
+        metadata.channel || metadata.uploader,
+        metadata.uploadDate
+      );
 
       return fileInfo;
 
@@ -123,6 +84,102 @@ export default class YtDlpService {
       glog.error(`[YtDlpService] Error downloading ${url}: ${error.message}`);
       throw new Error(`Download failed: ${error.message}`);
     }
+  }
+
+  private async fetchMetadata(url: string): Promise<VideoMetadata> {
+    const metadataCmd = `yt-dlp --print "%(channel)s|%(uploader)s|%(upload_date)s|%(title)s" --no-download "${url}"`;
+
+    glog.info(`[YtDlpService] Getting metadata: ${metadataCmd}`);
+
+    const { stdout: metadataOutput } = await execAsync(metadataCmd);
+    const [channel, uploader, uploadDate, title] = metadataOutput.trim().split('|');
+
+    const sanitizedChannel = this.sanitizeFilename(channel || uploader || "unknown_channel");
+    const sanitizedTitle = this.sanitizeFilename(title || "unknown_title");
+
+    glog.info(`[YtDlpService] Metadata - Channel: ${sanitizedChannel}, Title: ${sanitizedTitle}, Upload Date: ${uploadDate}`);
+
+    return {
+      channel: sanitizedChannel,
+      uploader: uploader || channel || "unknown_uploader",
+      uploadDate,
+      title: sanitizedTitle
+    };
+  }
+
+  private async generateDownloadPaths(
+    userId: string,
+    metadata: VideoMetadata,
+    format: string,
+    isPlaylist: boolean,
+    playlistTitle: string
+  ): Promise<DownloadPaths> {
+    const botService = BotService.getInstance();
+
+    // 파일명 구성
+    let filename = metadata.title;
+
+    if (botService.globalOptions.addChannelNameToFileName === "on") {
+      filename = `${metadata.channel}_${filename}`;
+    }
+
+    if (botService.globalOptions.addUploadDateNameToFileName === "on" && metadata.uploadDate) {
+      filename = `${metadata.uploadDate}_${filename}`;
+    }
+
+    // 확장자 결정
+    const extension = this.isAudioFormat(format) ? this.getAudioFormat(format) : format;
+    const fullFilename = `${filename}.${extension}`;
+
+    // 출력 디렉토리 설정
+    const outputDir = `/ytdlbot/download/${userId}/${metadata.channel}`;
+    let finalOutputPath = outputDir;
+
+    if (isPlaylist && playlistTitle) {
+      finalOutputPath = `${outputDir}/${playlistTitle.replace(/[/\\?%*:|"<>]/g, "_")}`;
+    }
+
+    const fullFilePath = `${finalOutputPath}/${fullFilename}`;
+
+    return {
+      outputDir,
+      finalOutputPath,
+      fullFilePath,
+      fullFilename
+    };
+  }
+
+  private buildYtDlpCommand(url: string, format: string, fullFilePath: string): string {
+    const cmd = [
+      "yt-dlp",
+      "-f", this.getFormatSelector(format),
+      "-o", `"${fullFilePath}"`,
+      "--add-metadata",
+      "--embed-thumbnail",
+      "--print", '"after_move:%(filepath)s"'
+    ];
+
+    // 오디오 전용 포맷인 경우 추가 옵션
+    if (this.isAudioFormat(format)) {
+      cmd.push("--extract-audio");
+      cmd.push("--audio-format", this.getAudioFormat(format));
+    }
+
+    cmd.push(`"${url}"`);
+
+    return cmd.join(" ");
+  }
+
+  private async executeDownload(cmdString: string, url: string): Promise<void> {
+    glog.info(`[YtDlpService] Executing command: ${cmdString}`);
+
+    const { stderr } = await execAsync(cmdString);
+
+    if (stderr) {
+      glog.warn(`[YtDlpService] stderr: ${stderr}`);
+    }
+
+    glog.info(`[YtDlpService] Download completed for ${url}`);
   }
 
   async getRssContentFromPlaylist(playlistUrl: string): Promise<IPlayList> {
@@ -235,23 +292,6 @@ ${downloadedFile}`;
     } catch (error: any) {
       glog.error(`[YtDlpService] Error extracting file info: ${error.message}`);
       return "Download completed successfully";
-    }
-  }
-
-  private async getChannelInfo(url: string): Promise<string | null> {
-    try {
-      // yt-dlp를 사용해 채널명 가져오기
-      const cmd = `yt-dlp --print "%(uploader)s" --no-download "${url}"`;
-
-      glog.info(`[YtDlpService] Getting channel info: ${cmd}`);
-
-      const { stdout } = await execAsync(cmd);
-      const channelName = stdout.trim();
-
-      return channelName || null;
-    } catch (error: any) {
-      glog.warn(`[YtDlpService] Failed to get channel info: ${error.message}`);
-      return null;
     }
   }
 
