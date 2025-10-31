@@ -134,18 +134,15 @@ To integrate with DS Audio:
 ### Update yt-dlp Engine
 Update to the latest yt-dlp version (for YouTube compatibility):
 ```bash
-# Update only yt-dlp image
-docker compose pull yt-dlp-service
+# Rebuild bot with latest yt-dlp
+docker compose up -d --build --no-cache ytdl-download-bot
 ```
 
 ### Update Bot Code
 Update to the latest bot code from repository:
 ```bash
-# Pull latest code
+# Pull latest code and rebuild
 git pull
-
-# Rebuild and restart services
-docker compose down
 docker compose up -d --build
 ```
 
@@ -153,9 +150,7 @@ docker compose up -d --build
 Update everything to the latest versions:
 ```bash
 git pull
-docker compose pull
-docker compose down
-docker compose up -d --build
+docker compose up -d --build --no-cache
 ```
 
-> **Tip**: If YouTube downloads start failing, updating yt-dlp usually fixes the issue.
+> **Tip**: If YouTube downloads start failing, updating yt-dlp usually fixes the issue. Use the first command to quickly update only yt-dlp.

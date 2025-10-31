@@ -23,5 +23,3 @@ services:
       - $DOWNLOAD_PATH:/ytdlbot/download
       - $SEARCH_ROOT_PATH:/ytdlbot/searchroot
       - ./bot/db:/ytdlbot/db
-  yt-dlp-service:
-    image: ghcr.io/jauderho/yt-dlp:latest

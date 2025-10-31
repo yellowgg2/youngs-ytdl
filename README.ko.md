@@ -134,18 +134,15 @@ DS Audio와 연동하려면:
 ### yt-dlp 엔진 업데이트
 yt-dlp의 최신 버전으로 업데이트 (YouTube 변경사항 대응):
 ```bash
-# yt-dlp 이미지만 업데이트
-docker compose pull yt-dlp-service
+# 최신 yt-dlp로 봇 재빌드
+docker compose up -d --build --no-cache ytdl-download-bot
 ```
 
 ### 봇 코드 업데이트
 저장소의 최신 코드로 업데이트:
 ```bash
-# 최신 코드 가져오기
+# 최신 코드 가져오기 및 재빌드
 git pull
-
-# 서비스 재빌드 및 재시작
-docker compose down
 docker compose up -d --build
 ```
 
@@ -153,9 +150,7 @@ docker compose up -d --build
 모든 구성 요소를 최신 버전으로 업데이트:
 ```bash
 git pull
-docker compose pull
-docker compose down
-docker compose up -d --build
+docker compose up -d --build --no-cache
 ```
 
-> **팁**: YouTube 다운로드가 실패하는 경우, 대부분 yt-dlp 업데이트로 해결됩니다.
+> **팁**: YouTube 다운로드가 실패하는 경우, 대부분 yt-dlp 업데이트로 해결됩니다. 첫 번째 명령어로 빠르게 yt-dlp만 업데이트할 수 있습니다.
