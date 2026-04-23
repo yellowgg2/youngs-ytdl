@@ -380,19 +380,24 @@ export default class BotService {
 
   checkReplyAndDeleteFile(msg: TelegramBot.Message): CheckReplyForDelete {
     const chatId = msg.chat.id;
-    let channel = msg.reply_to_message?.text?.split("\n")?.[3] ?? null;
+    const replyText = msg.reply_to_message?.text ?? "";
+    const lines = replyText.split("\n");
 
-    // 해당 메세지를 지우겠다는 의미
-    if (channel !== null && this.isDeleteWords(msg.text ?? "")) {
-      let downloadChannelDir = `./download/${
-        msg.from?.username ?? "unknown"
-      }/${channel.replace(LF.str.channelName, "")}`;
-      let filename = msg.reply_to_message?.text?.split("\n")?.[7] ?? null;
-      if (
-        filename !== null &&
-        fs.existsSync(`${downloadChannelDir}/${filename}`)
-      ) {
-        fs.unlink(`${downloadChannelDir}/${filename}`, err => {
+    let outputPath: string | null = null;
+    for (let i = 0; i < lines.length; i++) {
+      if (lines[i].startsWith("OutputPath:")) {
+        const inlineValue = lines[i].replace("OutputPath:", "").trim();
+        outputPath = inlineValue || lines[i + 1]?.trim() || null;
+        break;
+      }
+    }
+
+    const filename = lines[lines.length - 1]?.trim() || null;
+
+    if (outputPath !== null && this.isDeleteWords(msg.text ?? "")) {
+      const fullPath = `${outputPath}/${filename}`;
+      if (filename !== null && fs.existsSync(fullPath)) {
+        fs.unlink(fullPath, err => {
           if (err) {
             this.sendMsg(chatId!, err.message);
             return;
@@ -405,7 +410,7 @@ export default class BotService {
         });
       }
       return CheckReplyForDelete.StopProcessing;
-    } else if (channel !== null && !this.isDeleteWords(msg.text!)) {
+    } else if (outputPath !== null && !this.isDeleteWords(msg.text!)) {
       this.sendMsg(chatId!, LF.str.notACmd);
       return CheckReplyForDelete.StopProcessing;
     }
