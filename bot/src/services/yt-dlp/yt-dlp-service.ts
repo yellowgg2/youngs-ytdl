@@ -87,12 +87,14 @@ export default class YtDlpService {
   }
 
   private async fetchMetadata(url: string): Promise<VideoMetadata> {
-    const metadataCmd = `yt-dlp --print "%(channel)s|%(uploader)s|%(upload_date)s|%(title)s" --no-download --no-playlist "${url}"`;
+    const separator = "<<<SEP>>>";
+    const metadataCmd = `yt-dlp --print "%(channel)s${separator}%(uploader)s${separator}%(upload_date)s${separator}%(title)s" --no-download --no-playlist "${url}"`;
 
     glog.info(`[YtDlpService] Getting metadata: ${metadataCmd}`);
 
     const { stdout: metadataOutput } = await execAsync(metadataCmd);
-    const [channel, uploader, uploadDate, title] = metadataOutput.trim().split('|');
+    const [channel, uploader, uploadDate, ...titleParts] = metadataOutput.trim().split(separator);
+    const title = titleParts.join(separator);
 
     const sanitizedChannel = this.sanitizeFilename(channel || uploader || "unknown_channel");
     const sanitizedTitle = this.sanitizeFilename(title || "unknown_title");
