@@ -12,6 +12,7 @@ import DbHandler, { IYtdlGlobalOptionToObj } from "../sqlite/db-handler";
 import fs from "fs";
 import TelegramModel from "../../models/telegram-model";
 import { LF } from "../../language/language-factory";
+import { runProcess } from "../process/process-runner";
 
 enum CheckReplyForDelete {
   StopProcessing = 1,
@@ -305,11 +306,18 @@ export default class BotService {
       .catch(e => glog.error(e));
   }
 
-  private async runLinuxCommand(cmd: string, callback: any) {
-    var exec = require("child_process").exec;
-    exec(cmd, function (error: any, stdout: any, stderr: any) {
+  private async runCommand(
+    file: string,
+    args: string[],
+    callback: (output: string) => void
+  ) {
+    try {
+      const { stdout } = await runProcess(file, args);
       callback(stdout);
-    });
+    } catch (error) {
+      glog.error(`[BotService] Failed to run ${file}: ${error}`);
+      callback("");
+    }
   }
 
   private sendFileTypeButtons(
@@ -517,11 +525,18 @@ export default class BotService {
             var cloneCmd = cmd.slice();
             cloneCmd.splice(0, 1);
 
-            let linuxCmd = `find /ytdlbot/searchroot -type f -iname "*${cloneCmd.join(
-              " "
-            )}*" ! -path "*/@eaDir*"`;
+            const findArgs = [
+              "/ytdlbot/searchroot",
+              "-type",
+              "f",
+              "-iname",
+              `*${cloneCmd.join(" ")}*`,
+              "!",
+              "-path",
+              "*/@eaDir*"
+            ];
 
-            this.runLinuxCommand(linuxCmd, (output: string) => {
+            this.runCommand("find", findArgs, (output: string) => {
               let replacedPath = output.replace(
                 /\/ytdlbot\/searchroot/g,
                 process.env.SEARCH_ROOT_PATH ?? "."
@@ -535,7 +550,7 @@ export default class BotService {
                 this.sendMsg(chatId!, replacedPath);
               }
             });
-            glog.info(`run find command ${linuxCmd}`);
+            glog.info(`run find with args ${JSON.stringify(findArgs)}`);
           });
           break;
         case /\/showft/.test(cmd[0]):

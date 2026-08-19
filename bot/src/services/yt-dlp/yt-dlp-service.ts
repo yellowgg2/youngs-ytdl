@@ -1,9 +1,7 @@
-import { exec } from "child_process";
-import { promisify } from "util";
 import { glog } from "../logger/custom-logger";
 import BotService from "../telegram/bot-service";
-
-const execAsync = promisify(exec);
+import { runProcess } from "../process/process-runner";
+import { sanitizePathSegment } from "../../utils/filename-utils";
 
 interface IPlayListItem {
   title: string;
@@ -66,8 +64,8 @@ export default class YtDlpService {
       glog.info(`[YtDlpService] Output will be saved to: ${paths.fullFilePath}`);
 
       // 3. yt-dlp 명령어 구성 및 실행
-      const cmdString = this.buildYtDlpCommand(url, format, paths.fullFilePath);
-      await this.executeDownload(cmdString, url);
+      const args = this.buildYtDlpArgs(url, format, paths.fullFilePath);
+      await this.executeDownload(args, url);
 
       // 4. 파일 정보 추출
       const fileInfo = await this.extractFileInfo(
@@ -88,16 +86,22 @@ export default class YtDlpService {
 
   private async fetchMetadata(url: string): Promise<VideoMetadata> {
     const separator = "<<<SEP>>>";
-    const metadataCmd = `yt-dlp --print "%(channel)s${separator}%(uploader)s${separator}%(upload_date)s${separator}%(title)s" --no-download --no-playlist "${url}"`;
+    const metadataArgs = [
+      "--print",
+      `%(channel)s${separator}%(uploader)s${separator}%(upload_date)s${separator}%(title)s`,
+      "--no-download",
+      "--no-playlist",
+      url
+    ];
 
-    glog.info(`[YtDlpService] Getting metadata: ${metadataCmd}`);
+    glog.info(`[YtDlpService] Getting metadata with args: ${JSON.stringify(metadataArgs)}`);
 
-    const { stdout: metadataOutput } = await execAsync(metadataCmd);
+    const { stdout: metadataOutput } = await runProcess("yt-dlp", metadataArgs);
     const [channel, uploader, uploadDate, ...titleParts] = metadataOutput.trim().split(separator);
     const title = titleParts.join(separator);
 
-    const sanitizedChannel = this.sanitizeFilename(channel || uploader || "unknown_channel");
-    const sanitizedTitle = this.sanitizeFilename(title || "unknown_title");
+    const sanitizedChannel = sanitizePathSegment(channel || uploader || "unknown_channel", "unknown_channel");
+    const sanitizedTitle = sanitizePathSegment(title || "unknown_title", "unknown_title");
 
     glog.info(`[YtDlpService] Metadata - Channel: ${sanitizedChannel}, Title: ${sanitizedTitle}, Upload Date: ${uploadDate}`);
 
@@ -122,11 +126,11 @@ export default class YtDlpService {
     let filename = metadata.title;
 
     if (botService.globalOptions.addChannelNameToFileName === "on") {
-      filename = `${metadata.channel}_${filename}`;
+      filename = `${metadata.channel} - ${filename}`;
     }
 
     if (botService.globalOptions.addUploadDateNameToFileName === "on" && metadata.uploadDate) {
-      filename = `${metadata.uploadDate}_${filename}`;
+      filename = `${metadata.uploadDate} - ${filename}`;
     }
 
     // 확장자 결정
@@ -138,7 +142,7 @@ export default class YtDlpService {
     let finalOutputPath = outputDir;
 
     if (isPlaylist && playlistTitle) {
-      finalOutputPath = `${outputDir}/${playlistTitle.replace(/[/\\?%*:|"<>]/g, "_")}`;
+      finalOutputPath = `${outputDir}/${sanitizePathSegment(playlistTitle, "unknown_playlist")}`;
     }
 
     const fullFilePath = `${finalOutputPath}/${fullFilename}`;
@@ -151,37 +155,36 @@ export default class YtDlpService {
     };
   }
 
-  private buildYtDlpCommand(url: string, format: string, fullFilePath: string): string {
-    const cmd = [
-      "yt-dlp",
+  private buildYtDlpArgs(url: string, format: string, fullFilePath: string): string[] {
+    const args = [
       "-f", this.getFormatSelector(format),
-      "-o", `"${fullFilePath}"`,
+      "-o", fullFilePath,
       "--no-playlist"
     ];
 
     // 임베딩을 지원하는 포맷인 경우에만 메타데이터 및 썸네일 옵션 추가
     if (this.supportsEmbedding(format)) {
-      cmd.push("--add-metadata");
-      cmd.push("--embed-thumbnail");
+      args.push("--add-metadata");
+      args.push("--embed-thumbnail");
     }
 
-    cmd.push("--print", '"after_move:%(filepath)s"');
+    args.push("--print", "after_move:%(filepath)s");
 
     // 오디오 전용 포맷인 경우 추가 옵션
     if (this.isAudioFormat(format)) {
-      cmd.push("--extract-audio");
-      cmd.push("--audio-format", this.getAudioFormat(format));
+      args.push("--extract-audio");
+      args.push("--audio-format", this.getAudioFormat(format));
     }
 
-    cmd.push(`"${url}"`);
+    args.push(url);
 
-    return cmd.join(" ");
+    return args;
   }
 
-  private async executeDownload(cmdString: string, url: string): Promise<void> {
-    glog.info(`[YtDlpService] Executing command: ${cmdString}`);
+  private async executeDownload(args: string[], url: string): Promise<void> {
+    glog.info(`[YtDlpService] Executing yt-dlp with args: ${JSON.stringify(args)}`);
 
-    const { stderr } = await execAsync(cmdString);
+    const { stderr } = await runProcess("yt-dlp", args);
 
     if (stderr) {
       glog.warn(`[YtDlpService] stderr: ${stderr}`);
@@ -193,11 +196,11 @@ export default class YtDlpService {
   async getRssContentFromPlaylist(playlistUrl: string): Promise<IPlayList> {
     try {
       // 플레이리스트 정보를 JSON 형태로 가져오기
-      const cmd = `yt-dlp --dump-json --flat-playlist "${playlistUrl}"`;
+      const args = ["--dump-json", "--flat-playlist", playlistUrl];
 
-      glog.info(`[YtDlpService] Getting playlist info: ${cmd}`);
+      glog.info(`[YtDlpService] Getting playlist info with args: ${JSON.stringify(args)}`);
 
-      const { stdout } = await execAsync(cmd);
+      const { stdout } = await runProcess("yt-dlp", args);
 
       const lines = stdout.trim().split('\n').filter(line => line.trim());
       const items: IPlayListItem[] = [];
@@ -285,9 +288,8 @@ export default class YtDlpService {
       // 파일 크기 가져오기
       let fileSize = "Unknown";
       try {
-        const fileSizeCmd = `du -h "${fullFilePath}" | cut -f1`;
-        const { stdout: sizeOutput } = await execAsync(fileSizeCmd);
-        fileSize = sizeOutput.trim();
+        const { stdout: sizeOutput } = await runProcess("du", ["-h", fullFilePath]);
+        fileSize = sizeOutput.trim().split(/\s+/)[0];
         glog.info(`[YtDlpService] File size: ${fileSize} for ${fullFilePath}`);
       } catch (sizeError) {
         glog.warn(`[YtDlpService] Failed to get file size for ${fullFilePath}: ${sizeError}`);
@@ -309,13 +311,4 @@ ${downloadedFile}`;
     }
   }
 
-  private sanitizeFilename(filename: string): string {
-    // 파일/폴더명에 사용할 수 없는 문자들을 제거하거나 대체
-    return filename
-      .replace(/[/\\?%*:|"<>,]/g, "_")  // 특수문자(콤마 포함)를 언더스코어로 대체
-      .replace(/\s+/g, "_")             // 공백을 언더스코어로 대체
-      .replace(/_{2,}/g, "_")           // 연속된 언더스코어를 하나로 합침
-      .replace(/^_|_$/g, "")            // 앞뒤 언더스코어 제거
-      .toLowerCase();                   // 소문자로 변환
-  }
 }

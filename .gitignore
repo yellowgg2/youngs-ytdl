@@ -5,3 +5,4 @@ bot/.env
 claudedocs/
 .mcp.json
 .serena/
+.codex/

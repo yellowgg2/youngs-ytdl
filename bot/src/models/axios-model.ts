@@ -1,3 +1,5 @@
+import { sanitizePathSegment } from "../utils/filename-utils";
+
 export default class AxiosModel {
   extractFilenameFromContentDisposition(contentDisposition: string): string {
     let filenameRegex = /filename\*?=['"]?(?:UTF-\d['"]*)?([^;\r\n"']*)['"]?;?/;
@@ -8,10 +10,7 @@ export default class AxiosModel {
     if (matches != null && matches[1]) {
       filename = decodeURI(matches[1]);
       filename = filename.replace(/%[0-9A-Z][0-9A-Z]/g, "");
-      filename = filename
-        .replace(/[/\\?%*:|"<>,'"!@#$^&(){}[\]~`]/g, "_")
-        .replace(/_{2,}/g, "_")
-        .replace(/^_|_$/g, "");
+      filename = sanitizePathSegment(filename, "download");
     }
     return filename;
   }

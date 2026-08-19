@@ -7,8 +7,9 @@
   "license": "MIT",
   "scripts": {
     "init": "tsc --init",
-    "test": "jest",
+    "test": "node --test test/*.test.js",
     "test:yt-dlp-config": "node --test test/yt-dlp-runtime-config.test.js",
+    "test:special-characters": "node --test test/special-characters.test.js",
     "cleantest": "npm run test:clean",
     "test:clean": "jest --clearCache",
     "debug": "tsc --sourcemap",
