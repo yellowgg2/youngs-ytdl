@@ -8,6 +8,7 @@
   "scripts": {
     "init": "tsc --init",
     "test": "jest",
+    "test:yt-dlp-config": "node --test test/yt-dlp-runtime-config.test.js",
     "cleantest": "npm run test:clean",
     "test:clean": "jest --clearCache",
     "debug": "tsc --sourcemap",

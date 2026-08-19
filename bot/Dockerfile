@@ -7,6 +7,7 @@ ENV TZ 'Asia/Seoul'
 
 # Copy yt-dlp binary from first stage
 COPY --from=yt-dlp-stage /usr/local/bin/yt-dlp /usr/local/bin/yt-dlp
+COPY yt-dlp.conf /etc/yt-dlp.conf
 
 # Use default sources for Node.js base image (bookworm)
 RUN echo $TZ > /etc/timezone && \
@@ -19,6 +20,7 @@ RUN echo $TZ > /etc/timezone && \
 
 # Make yt-dlp executable
 RUN chmod +x /usr/local/bin/yt-dlp
+RUN yt-dlp --update-to nightly
 
 RUN mkdir -p /ytdlbot/download
 RUN mkdir -p /ytdlbot/db
